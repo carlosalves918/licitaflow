@@ -448,7 +448,24 @@ export default function App() {
   const [saving, setSaving] = useState(false);
 
   // Data
-  const [empresa, setEmpresa] = useState(null);
+// --- INÍCIO DA MUDANÇA: SISTEMA MULTI-PERFIS ---
+  const [empresas, setEmpresas] = useState(() => {
+    const salvo = localStorage.getItem("licita_empresas");
+    return salvo ? JSON.parse(salvo) : [];
+  });
+  const [idAtiva, setIdAtiva] = useState(() => localStorage.getItem("licita_ativa_id") || "");
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("licita_theme") === "dark");
+
+  const empresa = useMemo(() => {
+    return empresas.find(e => e.id === idAtiva) || null;
+  }, [empresas, idAtiva]);
+
+  useEffect(() => {
+    localStorage.setItem("licita_empresas", JSON.stringify(empresas));
+    localStorage.setItem("licita_ativa_id", idAtiva);
+    localStorage.setItem("licita_theme", darkMode ? "dark" : "light");
+  }, [empresas, idAtiva, darkMode]);
+  // --- FIM DA MUDANÇA ---
   const [certames, setCertames] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [propostas, setPropostas] = useState([]);
@@ -779,16 +796,54 @@ export default function App() {
       {sidebarOpen&&<div style={RS.overlay} onClick={()=>setSidebarOpen(false)}/>}
 
       {/* ── HEADER ── */}
-      <header style={RS.hdr}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <button style={RS.menuBtn} onClick={()=>setSidebarOpen(v=>!v)}>☰</button>
-          <span style={{fontSize:17,color:"#1d4ed8",fontWeight:900}}>⚖ LicitaFlow</span>
+   <header style={{ 
+        ...S.header, 
+        background: darkMode ? "#1e293b" : "#fff",
+        color: darkMode ? "#fff" : "#1e293b",
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        padding: '10px 20px',
+        borderBottom: darkMode ? "1px solid #334155" : "1px solid #e2e8f0"
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ background: "#1d4ed8", color: "#fff", width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18 }}>L</div>
+          <div>
+            <h1 style={{ fontSize: 16, fontWeight: 800, color: "#1d4ed8", lineHeight: 1 }}>LICITAFLOW</h1>
+            <div style={{ fontSize: 10, fontWeight: 700, color: darkMode ? "#94a3b8" : "#64748b", letterSpacing: 1 }}>SISTEMA DE GESTÃO</div>
+          </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button style={{...RS.notifBtn,background:notifs.length>0?"#fef2f2":"none"}} onClick={()=>setShowNotifs(v=>!v)}>
-            🔔{notifs.length>0&&<span style={RS.nDot}>{notifs.length}</span>}
+
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <select 
+            value={idAtiva} 
+            onChange={(e) => setIdAtiva(e.target.value)}
+            style={{ padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+          >
+            <option value="">Alternar Cliente...</option>
+            {empresas.map(e => <option key={e.id} value={e.id}>{e.razaoSocial}</option>)}
+          </select>
+          
+          <button 
+            onClick={() => {
+              const nome = prompt("Razão Social da Empresa:");
+              if(nome) {
+                const nova = { ...EMP0, id: Date.now().toString(), razaoSocial: nome };
+                setEmpresas([...empresas, nova]);
+                setIdAtiva(nova.id);
+              }
+            }}
+            style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            + Novo
           </button>
-          <div style={RS.avatar} onClick={()=>setTab("empresa")} title="Minha Empresa">{(empresa?.razaoSocial||"E").slice(0,2).toUpperCase()}</div>
+
+          <button 
+            onClick={() => setDarkMode(!darkMode)}
+            style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
         </div>
       </header>
 
