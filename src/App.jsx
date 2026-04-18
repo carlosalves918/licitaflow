@@ -780,8 +780,9 @@ export default function App() {
 
       {/* ── HEADER ── */}
   {/* ── HEADER CORRIGIDO ── */}
+{/* HEADER CORRIGIDO E SEGURO */}
 <header style={{ 
-  padding: '10px 20px', 
+  padding: '12px 20px', 
   background: darkMode ? "#1e293b" : "#fff",
   color: darkMode ? "#fff" : "#1e293b",
   display: 'flex', 
@@ -790,31 +791,34 @@ export default function App() {
   borderBottom: '1px solid #e2e8f0',
   position: 'sticky',
   top: 0,
-  zIndex: 1000
+  zIndex: 1000,
+  boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
 }}>
   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-    <div style={{ background: "#1d4ed8", color: "#fff", width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18 }}>L</div>
-    <h1 style={{ fontSize: 16, fontWeight: 800, color: "#1d4ed8" }}>LICITAFLOW</h1>
-    <span style={{fontSize:11, background:"#10b981", color:"#fff", padding:"2px 8px", borderRadius:20}}>ADMIN</span>
+    <div style={{ background: "#1d4ed8", color: "#fff", width: 38, height: 38, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 20 }}>L</div>
+    <h1 style={{ fontSize: 18, fontWeight: 800, color: "#1d4ed8", margin: 0 }}>LICITAFLOW</h1>
+    <span style={{fontSize:11, background:"#10b981", color:"#fff", padding:"3px 10px", borderRadius:20, fontWeight:600}}>ADMIN</span>
   </div>
 
-  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-    {/* Seletor de empresas (modo admin) */}
+  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
     <select 
       value={idAtiva} 
       onChange={(e) => setIdAtiva(e.target.value)}
       style={{ 
-        padding: '8px 12px', 
+        padding: '9px 14px', 
         borderRadius: '8px', 
         border: '2px solid #1d4ed8', 
         fontSize: '14px', 
         background: darkMode ? '#334155' : '#fff', 
         color: darkMode ? '#fff' : '#000', 
-        fontWeight: '600' 
+        fontWeight: '600',
+        minWidth: 220
       }}
     >
       <option value="">🌐 Alternar Empresa / Cliente</option>
-      {empresas.map(e => <option key={e.id} value={e.id}>{e.razaoSocial}</option>)}
+      {empresas.map(e => (
+        <option key={e.id} value={e.id}>{e.razaoSocial}</option>
+      ))}
     </select>
     
     <button 
@@ -823,19 +827,19 @@ export default function App() {
         background: '#10b981', 
         color: '#fff', 
         border: 'none', 
-        padding: '8px 14px', 
+        padding: '9px 16px', 
         borderRadius: '8px', 
         cursor: 'pointer', 
-        fontWeight: 'bold' 
+        fontWeight: 'bold',
+        whiteSpace: 'nowrap'
       }}
     >
       + Nova Empresa
     </button>
 
-    {/* Botão Dark Mode */}
     <button 
       onClick={() => setDarkMode(!darkMode)}
-      style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer' }}
+      style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px' }}
     >
       {darkMode ? "☀️" : "🌙"}
     </button>
