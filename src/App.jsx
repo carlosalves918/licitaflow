@@ -5,108 +5,108 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 // ══════════════════════════════════════════════════════════════════════
 const CERTIDOES_CONFIG = [
   {
-    id:"cnd_federal",
-    nome:"Certidão Negativa Federal (RFB/PGFN)",
-    sigla:"CND Federal",
-    orgao:"Receita Federal + PGFN",
-    icon:"🏦",
-    validade:180,
-    cor:"#1d4ed8",
-    urlEmissao:"https://solucoes.receita.fazenda.gov.br/Servicos/certidaointernet/PJ/Emitir",
-    urlConsulta:"https://solucoes.receita.fazenda.gov.br/Servicos/certidaointernet/PJ/Emitir",
-    instrucao:"Informe o CNPJ no portal da Receita Federal para emitir/consultar a certidão.",
-    tipo:"Fiscal Federal",
+    id: "cnd_federal",
+    nome: "Certidão Negativa Federal (RFB/PGFN)",
+    sigla: "CND Federal",
+    orgao: "Receita Federal",
+    icon: "🏦",
+    validade: 180,
+    cor: "#1d4ed8",
+    urlEmissao: "https://servicos.receitafederal.gov.br/servico/certidoes/",
+    urlConsulta: "https://servicos.receitafederal.gov.br/servico/certidoes/",
+    instrucao: "Informe o CNPJ no portal da Receita Federal (novo endereço 2026).",
+    tipo: "Fiscal Federal",
   },
   {
-    id:"fgts",
-    nome:"Certificado de Regularidade FGTS (CRF)",
-    sigla:"CRF/FGTS",
-    orgao:"Caixa Econômica Federal",
-    icon:"🏛",
-    validade:30,
-    cor:"#f97316",
-    urlEmissao:"https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf",
-    urlConsulta:"https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf",
-    instrucao:"Acesse o portal da CAIXA e informe o CNPJ para consultar e emitir o CRF.",
-    tipo:"Fiscal FGTS",
+    id: "fgts",
+    nome: "Certificado de Regularidade FGTS (CRF)",
+    sigla: "CRF/FGTS",
+    orgao: "Caixa Econômica Federal",
+    icon: "🏛",
+    validade: 30,
+    cor: "#f97316",
+    urlEmissao: "https://consulta-crf.caixa.gov.br/",
+    urlConsulta: "https://consulta-crf.caixa.gov.br/",
+    instrucao: "Acesse o portal da CAIXA e informe o CNPJ.",
+    tipo: "Fiscal FGTS",
   },
   {
-    id:"cndt",
-    nome:"Certidão Negativa de Débitos Trabalhistas (CNDT)",
-    sigla:"CNDT",
-    orgao:"Tribunal Superior do Trabalho",
-    icon:"⚖️",
-    validade:180,
-    cor:"#7c3aed",
-    urlEmissao:"https://cndt-certidao.tst.jus.br/gerarCertidao.faces",
-    urlConsulta:"https://cndt-certidao.tst.jus.br/gerarCertidao.faces",
-    instrucao:"Acesse o TST e informe o CNPJ para emitir a CNDT gratuitamente.",
-    tipo:"Trabalhista",
+    id: "cndt",
+    nome: "Certidão Negativa de Débitos Trabalhistas (CNDT)",
+    sigla: "CNDT",
+    orgao: "Tribunal Superior do Trabalho",
+    icon: "⚖️",
+    validade: 180,
+    cor: "#7c3aed",
+    urlEmissao: "https://cndt-certidao.tst.jus.br/",
+    urlConsulta: "https://cndt-certidao.tst.jus.br/",
+    instrucao: "Acesse o portal do TST e informe o CNPJ.",
+    tipo: "Trabalhista",
   },
   {
-    id:"tjpe",
-    nome:"Certidão Negativa Cível – TJPE",
-    sigla:"CND Cível/TJPE",
-    orgao:"Tribunal de Justiça de Pernambuco",
-    icon:"🏛",
-    validade:90,
-    cor:"#0369a1",
-    urlEmissao:"https://www.tjpe.jus.br/web/guest/certidoes",
-    urlConsulta:"https://www.tjpe.jus.br/web/guest/certidoes",
-    instrucao:"Acesse o portal do TJPE e solicite a certidão de feitos cíveis.",
-    tipo:"Judicial",
+    id: "tjpe",
+    nome: "Certidão Negativa Cível – TJPE",
+    sigla: "CND Cível/TJPE",
+    orgao: "Tribunal de Justiça de Pernambuco",
+    icon: "🏛",
+    validade: 90,
+    cor: "#0369a1",
+    urlEmissao: "https://certidoesunificadas.app.tjpe.jus.br/",
+    urlConsulta: "https://certidoesunificadas.app.tjpe.jus.br/",
+    instrucao: "Certidão unificada (cível e criminal) — novo portal TJPE.",
+    tipo: "Judicial",
   },
   {
-    id:"cnd_estadual",
-    nome:"Certidão Negativa Estadual (SEFAZ-PE)",
-    sigla:"CND Estadual",
-    orgao:"SEFAZ Pernambuco",
-    icon:"🗂",
-    validade:60,
-    cor:"#16a34a",
-    urlEmissao:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
-    urlConsulta:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
-    instrucao:"Acesse o portal da SEFAZ-PE para emitir certidão de débitos estaduais.",
-    tipo:"Fiscal Estadual",
+    id: "cnd_estadual",
+    nome: "Certidão Negativa Estadual (SEFAZ-PE)",
+    sigla: "CND Estadual",
+    orgao: "SEFAZ Pernambuco",
+    icon: "🗂",
+    validade: 60,
+    cor: "#16a34a",
+    urlEmissao: "https://efisco.sefaz.pe.gov.br/sfi_trb_gpf/PREmitirCertidaoNegativaNarrativaDebitoFiscal",
+    urlConsulta: "https://efisco.sefaz.pe.gov.br/sfi_trb_gpf/PREmitirCertidaoNegativaNarrativaDebitoFiscal",
+    instrucao: "Portal atualizado da SEFAZ-PE.",
+    tipo: "Fiscal Estadual",
   },
   {
-    id:"cnd_municipal",
-    nome:"Certidão Negativa Municipal",
-    sigla:"CND Municipal",
-    orgao:"Prefeitura Municipal",
-    icon:"🏙",
-    validade:60,
-    cor:"#d97706",
-    urlEmissao:"",
-    urlConsulta:"",
-    instrucao:"Acesse o portal da prefeitura do seu município. O link varia conforme a cidade — cadastre manualmente.",
-    tipo:"Fiscal Municipal",
+    id: "cnd_municipal",
+    nome: "Certidão Negativa Municipal",
+    sigla: "CND Municipal",
+    orgao: "Prefeitura Municipal",
+    icon: "🏙",
+    validade: 60,
+    cor: "#d97706",
+    urlEmissao: "",
+    urlConsulta: "",
+    instrucao: "Link varia por município — cadastre manualmente.",
+    tipo: "Fiscal Municipal",
   },
   {
-    id:"falencia",
-    nome:"Certidão Negativa de Falência/Concordata",
-    sigla:"Cert. Falência",
-    orgao:"TJPE — Distribuição",
-    icon:"📋",
-    validade:30,
-    cor:"#dc2626",
-    urlEmissao:"https://www.tjpe.jus.br/web/guest/certidoes",
-    urlConsulta:"https://www.tjpe.jus.br/web/guest/certidoes",
-    instrucao:"Solicite no portal do TJPE — Certidões de Distribuição Cível.",
-    tipo:"Judicial",
+    id: "falencia",
+    nome: "Certidão Negativa de Falência/Concordata",
+    sigla: "Cert. Falência",
+    orgao: "TJPE — Distribuição",
+    icon: "📋",
+    validade: 30,
+    cor: "#dc2626",
+    urlEmissao: "https://certidoesunificadas.app.tjpe.jus.br/",
+    urlConsulta: "https://certidoesunificadas.app.tjpe.jus.br/",
+    instrucao: "Mesma certidão unificada do TJPE.",
+    tipo: "Judicial",
   },
   {
-    id:"simples",
-    nome:"Comprovante de Opção pelo Simples Nacional",
-    sigla:"Simples Nacional",
-    orgao:"Receita Federal",
-    icon:"📄",
-    validade:365,
-    cor:"#0891b2",
-    urlEmissao:"https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
-    urlConsulta:"https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
-    instrucao:"Acesse o portal do Simples Nacional para consultar a situação e emitir o comprovante.",
-    tipo:"Fiscal Federal",
+    id: "simples",
+    nome: "Comprovante de Opção pelo Simples Nacional",
+    sigla: "Simples Nacional",
+    orgao: "Receita Federal",
+    icon: "📄",
+    validade: 365,
+    cor: "#0891b2",
+    urlEmissao: "https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
+    urlConsulta: "https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
+    instrucao: "Portal do Simples Nacional.",
+    tipo: "Fiscal Federal",
   },
 ];
 
@@ -810,58 +810,49 @@ export default function App() {
 
       {/* ── HEADER ── */}
    <header style={{ 
-        padding: '10px 20px', 
-        background: darkMode ? "#1e293b" : "#fff",
-        color: darkMode ? "#fff" : "#1e293b",
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        borderBottom: '1px solid #e2e8f0',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ background: "#1d4ed8", color: "#fff", width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18 }}>L</div>
-          <h1 style={{ fontSize: 16, fontWeight: 800, color: "#1d4ed8" }}>LICITAFLOW</h1>
-        </div>
+  padding: '10px 20px', 
+  background: darkMode ? "#1e293b" : "#fff",
+  color: darkMode ? "#fff" : "#1e293b",
+  display: 'flex', 
+  justifyContent: 'space-between', 
+  alignItems: 'center',
+  borderBottom: '1px solid #e2e8f0',
+  position: 'sticky',
+  top: 0,
+  zIndex: 1000
+}}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ background: "#1d4ed8", color: "#fff", width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18 }}>L</div>
+    <h1 style={{ fontSize: 16, fontWeight: 800, color: "#1d4ed8" }}>LICITAFLOW</h1>
+    <span style={{fontSize:11, background:"#10b981", color:"#fff", padding:"2px 8px", borderRadius:20}}>ADMIN</span>
+  </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          {/* SELETOR DE EMPRESAS */}
-          <select 
-            value={idAtiva} 
-            onChange={(e) => setIdAtiva(e.target.value)}
-            style={{ padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', background: darkMode ? '#334155' : '#fff', color: darkMode ? '#fff' : '#000' }}
-          >
-            <option value="">Alternar Cliente...</option>
-            {empresas.map(e => <option key={e.id} value={e.id}>{e.razaoSocial}</option>)}
-          </select>
-          
-          {/* BOTÃO + NOVO */}
-          <button 
-            onClick={() => {
-              const nome = prompt("Razão Social da Empresa:");
-              if(nome) {
-                const nova = { ...EMP0, id: Date.now().toString(), razaoSocial: nome };
-                setEmpresas([...empresas, nova]);
-                setIdAtiva(nova.id);
-                showToast("✅ Novo perfil criado!");
-              }
-            }}
-            style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            + Novo
-          </button>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    {/* SELETOR DE EMPRESAS (MODO ADMIN) */}
+    <select 
+      value={idAtiva} 
+      onChange={(e) => setIdAtiva(e.target.value)}
+      style={{ padding: '8px 12px', borderRadius: '8px', border: '2px solid #1d4ed8', fontSize: '14px', background: darkMode ? '#334155' : '#fff', color: darkMode ? '#fff' : '#000', fontWeight: '600' }}
+    >
+      <option value="">🌐 Alternar Empresa / Cliente</option>
+      {empresas.map(e => <option key={e.id} value={e.id}>{e.razaoSocial}</option>)}
+    </select>
+    
+    <button 
+      onClick={handleNovaEmpresa}
+      style={{ background: '#10b981', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+    >
+      + Nova Empresa
+    </button>
 
-          {/* BOTÃO DARK MODE */}
-          <button 
-            onClick={() => setDarkMode(!darkMode)}
-            style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
-          >
-            {darkMode ? "☀️" : "🌙"}
-          </button>
-        </div>
-      </header>
+    <button 
+      onClick={() => setDarkMode(!darkMode)}
+      style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer' }}
+    >
+      {darkMode ? "☀️" : "🌙"}
+    </button>
+  </div>
+</header>
 
       {/* ── NOTIF PANEL ── */}
       {showNotifs&&(
