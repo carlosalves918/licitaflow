@@ -444,29 +444,40 @@ const PROP0 = {titulo:"",certameId:"",itens:[{desc:"",unidade:"UN",qtd:1,unit:""
 // ══════════════════════════════════════════════════════════════════════
 export default function App() {
   const [tab, setTab] = useState("dashboard");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  // Data
-// --- SISTEMA MULTI-PERFIS CORRIGIDO ---
+  
+  // ESTADO DOS PERFIS
   const [empresas, setEmpresas] = useState(() => {
     const salvo = localStorage.getItem("licita_empresas");
-    return (salvo && salvo !== "undefined") ? JSON.parse(salvo) : [];
+    return salvo ? JSON.parse(salvo) : [];
   });
   
   const [idAtiva, setIdAtiva] = useState(() => localStorage.getItem("licita_ativa_id") || "");
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("licita_theme") === "dark");
 
+  // VINCULANDO A EMPRESA ATIVA
   const empresa = useMemo(() => {
     const encontrada = empresas.find(e => e.id === idAtiva);
-    return encontrada || empresas[0] || EMP0; 
+    return encontrada || (empresas.length > 0 ? empresas[0] : EMP0);
   }, [empresas, idAtiva]);
 
+  // SALVAMENTO AUTOMÁTICO
   useEffect(() => {
     localStorage.setItem("licita_empresas", JSON.stringify(empresas));
     localStorage.setItem("licita_ativa_id", idAtiva);
     localStorage.setItem("licita_theme", darkMode ? "dark" : "light");
   }, [empresas, idAtiva, darkMode]);
+
+  // FUNÇÃO PARA CRIAR PERFIL
+  const handleNovaEmpresa = () => {
+    const nome = prompt("Razão Social da Empresa:");
+    if(nome) {
+      const nova = { ...EMP0, id: Date.now().toString(), razaoSocial: nome };
+      setEmpresas([...empresas, nova]);
+      setIdAtiva(nova.id);
+    }
+  };
+
+  // ... (Daqui para baixo segue o seu return)
   // --- FIM DA MUDANÇA ---
   const [certames, setCertames] = useState([]);
   const [documentos, setDocumentos] = useState([]);
