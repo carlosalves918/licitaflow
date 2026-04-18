@@ -5,108 +5,108 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 // ══════════════════════════════════════════════════════════════════════
 const CERTIDOES_CONFIG = [
   {
-    id: "cnd_federal",
-    nome: "Certidão Negativa Federal (RFB/PGFN)",
-    sigla: "CND Federal",
-    orgao: "Receita Federal",
-    icon: "🏦",
-    validade: 180,
-    cor: "#1d4ed8",
-    urlEmissao: "https://servicos.receitafederal.gov.br/servico/certidoes/",
-    urlConsulta: "https://servicos.receitafederal.gov.br/servico/certidoes/",
-    instrucao: "Informe o CNPJ no portal da Receita Federal (novo endereço 2026).",
-    tipo: "Fiscal Federal",
+    id:"cnd_federal",
+    nome:"Certidão Negativa Federal (RFB/PGFN)",
+    sigla:"CND Federal",
+    orgao:"Receita Federal + PGFN",
+    icon:"🏦",
+    validade:180,
+    cor:"#1d4ed8",
+    urlEmissao:"https://solucoes.receita.fazenda.gov.br/Servicos/certidaointernet/PJ/Emitir",
+    urlConsulta:"https://solucoes.receita.fazenda.gov.br/Servicos/certidaointernet/PJ/Emitir",
+    instrucao:"Informe o CNPJ no portal da Receita Federal para emitir/consultar a certidão.",
+    tipo:"Fiscal Federal",
   },
   {
-    id: "fgts",
-    nome: "Certificado de Regularidade FGTS (CRF)",
-    sigla: "CRF/FGTS",
-    orgao: "Caixa Econômica Federal",
-    icon: "🏛",
-    validade: 30,
-    cor: "#f97316",
-    urlEmissao: "https://consulta-crf.caixa.gov.br/",
-    urlConsulta: "https://consulta-crf.caixa.gov.br/",
-    instrucao: "Acesse o portal da CAIXA e informe o CNPJ.",
-    tipo: "Fiscal FGTS",
+    id:"fgts",
+    nome:"Certificado de Regularidade FGTS (CRF)",
+    sigla:"CRF/FGTS",
+    orgao:"Caixa Econômica Federal",
+    icon:"🏛",
+    validade:30,
+    cor:"#f97316",
+    urlEmissao:"https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf",
+    urlConsulta:"https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf",
+    instrucao:"Acesse o portal da CAIXA e informe o CNPJ para consultar e emitir o CRF.",
+    tipo:"Fiscal FGTS",
   },
   {
-    id: "cndt",
-    nome: "Certidão Negativa de Débitos Trabalhistas (CNDT)",
-    sigla: "CNDT",
-    orgao: "Tribunal Superior do Trabalho",
-    icon: "⚖️",
-    validade: 180,
-    cor: "#7c3aed",
-    urlEmissao: "https://cndt-certidao.tst.jus.br/",
-    urlConsulta: "https://cndt-certidao.tst.jus.br/",
-    instrucao: "Acesse o portal do TST e informe o CNPJ.",
-    tipo: "Trabalhista",
+    id:"cndt",
+    nome:"Certidão Negativa de Débitos Trabalhistas (CNDT)",
+    sigla:"CNDT",
+    orgao:"Tribunal Superior do Trabalho",
+    icon:"⚖️",
+    validade:180,
+    cor:"#7c3aed",
+    urlEmissao:"https://cndt-certidao.tst.jus.br/gerarCertidao.faces",
+    urlConsulta:"https://cndt-certidao.tst.jus.br/gerarCertidao.faces",
+    instrucao:"Acesse o TST e informe o CNPJ para emitir a CNDT gratuitamente.",
+    tipo:"Trabalhista",
   },
   {
-    id: "tjpe",
-    nome: "Certidão Negativa Cível – TJPE",
-    sigla: "CND Cível/TJPE",
-    orgao: "Tribunal de Justiça de Pernambuco",
-    icon: "🏛",
-    validade: 90,
-    cor: "#0369a1",
-    urlEmissao: "https://certidoesunificadas.app.tjpe.jus.br/",
-    urlConsulta: "https://certidoesunificadas.app.tjpe.jus.br/",
-    instrucao: "Certidão unificada (cível e criminal) — novo portal TJPE.",
-    tipo: "Judicial",
+    id:"tjpe",
+    nome:"Certidão Negativa Cível – TJPE",
+    sigla:"CND Cível/TJPE",
+    orgao:"Tribunal de Justiça de Pernambuco",
+    icon:"🏛",
+    validade:90,
+    cor:"#0369a1",
+    urlEmissao:"https://www.tjpe.jus.br/web/guest/certidoes",
+    urlConsulta:"https://www.tjpe.jus.br/web/guest/certidoes",
+    instrucao:"Acesse o portal do TJPE e solicite a certidão de feitos cíveis.",
+    tipo:"Judicial",
   },
   {
-    id: "cnd_estadual",
-    nome: "Certidão Negativa Estadual (SEFAZ-PE)",
-    sigla: "CND Estadual",
-    orgao: "SEFAZ Pernambuco",
-    icon: "🗂",
-    validade: 60,
-    cor: "#16a34a",
-    urlEmissao: "https://efisco.sefaz.pe.gov.br/sfi_trb_gpf/PREmitirCertidaoNegativaNarrativaDebitoFiscal",
-    urlConsulta: "https://efisco.sefaz.pe.gov.br/sfi_trb_gpf/PREmitirCertidaoNegativaNarrativaDebitoFiscal",
-    instrucao: "Portal atualizado da SEFAZ-PE.",
-    tipo: "Fiscal Estadual",
+    id:"cnd_estadual",
+    nome:"Certidão Negativa Estadual (SEFAZ-PE)",
+    sigla:"CND Estadual",
+    orgao:"SEFAZ Pernambuco",
+    icon:"🗂",
+    validade:60,
+    cor:"#16a34a",
+    urlEmissao:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
+    urlConsulta:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
+    instrucao:"Acesse o portal da SEFAZ-PE para emitir certidão de débitos estaduais.",
+    tipo:"Fiscal Estadual",
   },
   {
-    id: "cnd_municipal",
-    nome: "Certidão Negativa Municipal",
-    sigla: "CND Municipal",
-    orgao: "Prefeitura Municipal",
-    icon: "🏙",
-    validade: 60,
-    cor: "#d97706",
-    urlEmissao: "",
-    urlConsulta: "",
-    instrucao: "Link varia por município — cadastre manualmente.",
-    tipo: "Fiscal Municipal",
+    id:"cnd_municipal",
+    nome:"Certidão Negativa Municipal",
+    sigla:"CND Municipal",
+    orgao:"Prefeitura Municipal",
+    icon:"🏙",
+    validade:60,
+    cor:"#d97706",
+    urlEmissao:"",
+    urlConsulta:"",
+    instrucao:"Acesse o portal da prefeitura do seu município. O link varia conforme a cidade — cadastre manualmente.",
+    tipo:"Fiscal Municipal",
   },
   {
-    id: "falencia",
-    nome: "Certidão Negativa de Falência/Concordata",
-    sigla: "Cert. Falência",
-    orgao: "TJPE — Distribuição",
-    icon: "📋",
-    validade: 30,
-    cor: "#dc2626",
-    urlEmissao: "https://certidoesunificadas.app.tjpe.jus.br/",
-    urlConsulta: "https://certidoesunificadas.app.tjpe.jus.br/",
-    instrucao: "Mesma certidão unificada do TJPE.",
-    tipo: "Judicial",
+    id:"falencia",
+    nome:"Certidão Negativa de Falência/Concordata",
+    sigla:"Cert. Falência",
+    orgao:"TJPE — Distribuição",
+    icon:"📋",
+    validade:30,
+    cor:"#dc2626",
+    urlEmissao:"https://www.tjpe.jus.br/web/guest/certidoes",
+    urlConsulta:"https://www.tjpe.jus.br/web/guest/certidoes",
+    instrucao:"Solicite no portal do TJPE — Certidões de Distribuição Cível.",
+    tipo:"Judicial",
   },
   {
-    id: "simples",
-    nome: "Comprovante de Opção pelo Simples Nacional",
-    sigla: "Simples Nacional",
-    orgao: "Receita Federal",
-    icon: "📄",
-    validade: 365,
-    cor: "#0891b2",
-    urlEmissao: "https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
-    urlConsulta: "https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
-    instrucao: "Portal do Simples Nacional.",
-    tipo: "Fiscal Federal",
+    id:"simples",
+    nome:"Comprovante de Opção pelo Simples Nacional",
+    sigla:"Simples Nacional",
+    orgao:"Receita Federal",
+    icon:"📄",
+    validade:365,
+    cor:"#0891b2",
+    urlEmissao:"https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
+    urlConsulta:"https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
+    instrucao:"Acesse o portal do Simples Nacional para consultar a situação e emitir o comprovante.",
+    tipo:"Fiscal Federal",
   },
 ];
 
@@ -449,16 +449,6 @@ export default function App() {
 
   // Data
   const [empresa, setEmpresa] = useState(null);
-  // ==================== ESTADOS PRINCIPAIS ====================
-const [empresas, setEmpresas] = useState(() => {
-  const salvo = localStorage.getItem("licita_empresas");
-  return salvo ? JSON.parse(salvo) : [];
-});
-
-const [idAtiva, setIdAtiva] = useState(() => localStorage.getItem("licita_ativa_id") || "");
-
-const [darkMode, setDarkMode] = useState(() => localStorage.getItem("licita_theme") === "dark");
-// ========================================================
   const [certames, setCertames] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [propostas, setPropostas] = useState([]);
@@ -789,73 +779,36 @@ const [darkMode, setDarkMode] = useState(() => localStorage.getItem("licita_them
       {sidebarOpen&&<div style={RS.overlay} onClick={()=>setSidebarOpen(false)}/>}
 
       {/* ── HEADER ── */}
-  {/* ── HEADER CORRIGIDO ── */}
-{/* HEADER CORRIGIDO E SEGURO */}
-<header style={{ 
-  padding: '12px 20px', 
-  background: darkMode ? "#1e293b" : "#fff",
-  color: darkMode ? "#fff" : "#1e293b",
-  display: 'flex', 
-  justifyContent: 'space-between', 
-  alignItems: 'center',
-  borderBottom: '1px solid #e2e8f0',
-  position: 'sticky',
-  top: 0,
-  zIndex: 1000,
-  boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-}}>
-  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-    <div style={{ background: "#1d4ed8", color: "#fff", width: 38, height: 38, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 20 }}>L</div>
-    <h1 style={{ fontSize: 18, fontWeight: 800, color: "#1d4ed8", margin: 0 }}>LICITAFLOW</h1>
-    <span style={{fontSize:11, background:"#10b981", color:"#fff", padding:"3px 10px", borderRadius:20, fontWeight:600}}>ADMIN</span>
-  </div>
+      <header style={RS.hdr}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <button style={RS.menuBtn} onClick={()=>setSidebarOpen(v=>!v)}>☰</button>
+          <span style={{fontSize:17,color:"#1d4ed8",fontWeight:900}}>⚖ LicitaFlow</span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <button style={{...RS.notifBtn,background:notifs.length>0?"#fef2f2":"none"}} onClick={()=>setShowNotifs(v=>!v)}>
+            🔔{notifs.length>0&&<span style={RS.nDot}>{notifs.length}</span>}
+          </button>
+          <div style={RS.avatar} onClick={()=>setTab("empresa")} title="Minha Empresa">{(empresa?.razaoSocial||"E").slice(0,2).toUpperCase()}</div>
+        </div>
+      </header>
 
-  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-    <select 
-      value={idAtiva} 
-      onChange={(e) => setIdAtiva(e.target.value)}
-      style={{ 
-        padding: '9px 14px', 
-        borderRadius: '8px', 
-        border: '2px solid #1d4ed8', 
-        fontSize: '14px', 
-        background: darkMode ? '#334155' : '#fff', 
-        color: darkMode ? '#fff' : '#000', 
-        fontWeight: '600',
-        minWidth: 220
-      }}
-    >
-      <option value="">🌐 Alternar Empresa / Cliente</option>
-      {empresas.map(e => (
-        <option key={e.id} value={e.id}>{e.razaoSocial}</option>
-      ))}
-    </select>
-    
-    <button 
-      onClick={handleNovaEmpresa}
-      style={{ 
-        background: '#10b981', 
-        color: '#fff', 
-        border: 'none', 
-        padding: '9px 16px', 
-        borderRadius: '8px', 
-        cursor: 'pointer', 
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap'
-      }}
-    >
-      + Nova Empresa
-    </button>
-
-    <button 
-      onClick={() => setDarkMode(!darkMode)}
-      style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px' }}
-    >
-      {darkMode ? "☀️" : "🌙"}
-    </button>
-  </div>
-</header>   
-    )}
+      {/* ── NOTIF PANEL ── */}
+      {showNotifs&&(
+        <div style={RS.notifPanel} onClick={e=>e.stopPropagation()}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",borderBottom:"1px solid #f1f5f9"}}>
+            <strong style={{fontSize:13}}>Notificações ({notifs.length})</strong>
+            <button style={{background:"none",border:"none",color:"#94a3b8",fontSize:11,cursor:"pointer"}} onClick={()=>{setNotifDismissed(notifs.map(n=>n.id));setShowNotifs(false);}}>Limpar tudo</button>
+          </div>
+          {notifs.length===0?<div style={{padding:"18px",fontSize:13,color:"#94a3b8",textAlign:"center"}}>Tudo em dia ✓</div>:
+            notifs.map(n=>(
+              <div key={n.id} style={{padding:"10px 14px",borderBottom:"1px solid #f8fafc",position:"relative",borderLeft:`3px solid ${NCOL[n.tipo]}`}}>
+                <div style={{fontSize:12,fontWeight:700,color:"#1e293b",paddingRight:20}}>{n.msg}</div>
+                <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{n.sub}</div>
+                <button style={{position:"absolute",top:8,right:10,background:"none",border:"none",color:"#94a3b8",fontSize:16,cursor:"pointer"}} onClick={()=>setNotifDismissed(p=>[...p,n.id])}>×</button>
+              </div>
+            ))}
+        </div>
+      )}
 
       {/* ── MODAL ── */}
       {modalType&&(
