@@ -779,7 +779,8 @@ export default function App() {
       {sidebarOpen&&<div style={RS.overlay} onClick={()=>setSidebarOpen(false)}/>}
 
       {/* ── HEADER ── */}
-      <header style={{ 
+  {/* ── HEADER CORRIGIDO ── */}
+<header style={{ 
   padding: '10px 20px', 
   background: darkMode ? "#1e293b" : "#fff",
   color: darkMode ? "#fff" : "#1e293b",
@@ -798,11 +799,19 @@ export default function App() {
   </div>
 
   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-    {/* SELETOR DE EMPRESAS (MODO ADMIN) */}
+    {/* Seletor de empresas (modo admin) */}
     <select 
       value={idAtiva} 
       onChange={(e) => setIdAtiva(e.target.value)}
-      style={{ padding: '8px 12px', borderRadius: '8px', border: '2px solid #1d4ed8', fontSize: '14px', background: darkMode ? '#334155' : '#fff', color: darkMode ? '#fff' : '#000', fontWeight: '600' }}
+      style={{ 
+        padding: '8px 12px', 
+        borderRadius: '8px', 
+        border: '2px solid #1d4ed8', 
+        fontSize: '14px', 
+        background: darkMode ? '#334155' : '#fff', 
+        color: darkMode ? '#fff' : '#000', 
+        fontWeight: '600' 
+      }}
     >
       <option value="">🌐 Alternar Empresa / Cliente</option>
       {empresas.map(e => <option key={e.id} value={e.id}>{e.razaoSocial}</option>)}
@@ -810,11 +819,20 @@ export default function App() {
     
     <button 
       onClick={handleNovaEmpresa}
-      style={{ background: '#10b981', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+      style={{ 
+        background: '#10b981', 
+        color: '#fff', 
+        border: 'none', 
+        padding: '8px 14px', 
+        borderRadius: '8px', 
+        cursor: 'pointer', 
+        fontWeight: 'bold' 
+      }}
     >
       + Nova Empresa
     </button>
 
+    {/* Botão Dark Mode */}
     <button 
       onClick={() => setDarkMode(!darkMode)}
       style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer' }}
@@ -822,8 +840,8 @@ export default function App() {
       {darkMode ? "☀️" : "🌙"}
     </button>
   </div>
-</header>
-      )}
+</header>   
+    )}
 
       {/* ── MODAL ── */}
       {modalType&&(
