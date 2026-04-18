@@ -449,6 +449,16 @@ export default function App() {
 
   // Data
   const [empresa, setEmpresa] = useState(null);
+  // ==================== ESTADOS PRINCIPAIS ====================
+const [empresas, setEmpresas] = useState(() => {
+  const salvo = localStorage.getItem("licita_empresas");
+  return salvo ? JSON.parse(salvo) : [];
+});
+
+const [idAtiva, setIdAtiva] = useState(() => localStorage.getItem("licita_ativa_id") || "");
+
+const [darkMode, setDarkMode] = useState(() => localStorage.getItem("licita_theme") === "dark");
+// ========================================================
   const [certames, setCertames] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [propostas, setPropostas] = useState([]);
