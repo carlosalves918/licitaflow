@@ -448,16 +448,18 @@ export default function App() {
   const [saving, setSaving] = useState(false);
 
   // Data
-// --- INÍCIO DA MUDANÇA: SISTEMA MULTI-PERFIS ---
+// --- SISTEMA MULTI-PERFIS CORRIGIDO ---
   const [empresas, setEmpresas] = useState(() => {
     const salvo = localStorage.getItem("licita_empresas");
-    return salvo ? JSON.parse(salvo) : [];
+    return (salvo && salvo !== "undefined") ? JSON.parse(salvo) : [];
   });
+  
   const [idAtiva, setIdAtiva] = useState(() => localStorage.getItem("licita_ativa_id") || "");
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("licita_theme") === "dark");
 
   const empresa = useMemo(() => {
-    return empresas.find(e => e.id === idAtiva) || empresa [0] || null;
+    const encontrada = empresas.find(e => e.id === idAtiva);
+    return encontrada || empresas[0] || EMP0; 
   }, [empresas, idAtiva]);
 
   useEffect(() => {
