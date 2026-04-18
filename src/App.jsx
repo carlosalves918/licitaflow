@@ -799,33 +799,34 @@ export default function App() {
 
       {/* ── HEADER ── */}
    <header style={{ 
-        ...S.header, 
+        padding: '10px 20px', 
         background: darkMode ? "#1e293b" : "#fff",
         color: darkMode ? "#fff" : "#1e293b",
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        padding: '10px 20px',
-        borderBottom: darkMode ? "1px solid #334155" : "1px solid #e2e8f0"
+        borderBottom: '1px solid #e2e8f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ background: "#1d4ed8", color: "#fff", width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18 }}>L</div>
-          <div>
-            <h1 style={{ fontSize: 16, fontWeight: 800, color: "#1d4ed8", lineHeight: 1 }}>LICITAFLOW</h1>
-            <div style={{ fontSize: 10, fontWeight: 700, color: darkMode ? "#94a3b8" : "#64748b", letterSpacing: 1 }}>SISTEMA DE GESTÃO</div>
-          </div>
+          <h1 style={{ fontSize: 16, fontWeight: 800, color: "#1d4ed8" }}>LICITAFLOW</h1>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {/* SELETOR DE EMPRESAS */}
           <select 
             value={idAtiva} 
             onChange={(e) => setIdAtiva(e.target.value)}
-            style={{ padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+            style={{ padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', background: darkMode ? '#334155' : '#fff', color: darkMode ? '#fff' : '#000' }}
           >
             <option value="">Alternar Cliente...</option>
             {empresas.map(e => <option key={e.id} value={e.id}>{e.razaoSocial}</option>)}
           </select>
           
+          {/* BOTÃO + NOVO */}
           <button 
             onClick={() => {
               const nome = prompt("Razão Social da Empresa:");
@@ -833,6 +834,7 @@ export default function App() {
                 const nova = { ...EMP0, id: Date.now().toString(), razaoSocial: nome };
                 setEmpresas([...empresas, nova]);
                 setIdAtiva(nova.id);
+                showToast("✅ Novo perfil criado!");
               }
             }}
             style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
@@ -840,6 +842,7 @@ export default function App() {
             + Novo
           </button>
 
+          {/* BOTÃO DARK MODE */}
           <button 
             onClick={() => setDarkMode(!darkMode)}
             style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
