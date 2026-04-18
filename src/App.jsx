@@ -457,7 +457,7 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("licita_theme") === "dark");
 
   const empresa = useMemo(() => {
-    return empresas.find(e => e.id === idAtiva) || null;
+    return empresas.find(e => e.id === idAtiva) || empresa [0] || null;
   }, [empresas, idAtiva]);
 
   useEffect(() => {
