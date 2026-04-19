@@ -58,9 +58,9 @@ const CERTIDOES_CONFIG = [
     icon:"🏛",
     validade:90,
     cor:"#0369a1",
-    urlEmissao:"https://www.tjpe.jus.br/web/guest/certidoes",
-    urlConsulta:"https://www.tjpe.jus.br/web/guest/certidoes",
-    instrucao:"Acesse o portal do TJPE e solicite a certidão de feitos cíveis.",
+    urlEmissao:"https://certidoesunificadas.app.tjpe.jus.br/",
+    urlConsulta:"https://certidoesunificadas.app.tjpe.jus.br/",
+    instrucao:"Acesse o portal unificado do TJPE, informe o CNPJ e solicite a Certidão Negativa Cível.",
     tipo:"Judicial",
   },
   {
@@ -71,9 +71,9 @@ const CERTIDOES_CONFIG = [
     icon:"🗂",
     validade:60,
     cor:"#16a34a",
-    urlEmissao:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
-    urlConsulta:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
-    instrucao:"Acesse o eFisco da SEFAZ-PE, informe o CNPJ e emita a certidão de débitos estaduais (ICMS).",
+    urlEmissao:"https://efisco.sefaz.pe.gov.br/sfi_trb_gcc/PREmitirCertidaoRegularidadeFiscal",
+    urlConsulta:"https://efisco.sefaz.pe.gov.br/sfi_trb_gcc/PREmitirCertidaoRegularidadeFiscal",
+    instrucao:"Acesse o eFisco da SEFAZ-PE, informe o CNPJ e emita a Certidão de Regularidade Fiscal Estadual.",
     tipo:"Fiscal Estadual",
   },
   {
@@ -97,9 +97,9 @@ const CERTIDOES_CONFIG = [
     icon:"📋",
     validade:30,
     cor:"#dc2626",
-    urlEmissao:"https://srv01.tjpe.jus.br/consultaprocessual/",
-    urlConsulta:"https://srv01.tjpe.jus.br/consultaprocessual/",
-    instrucao:"Acesse o portal do TJPE (consulta processual) e busque pela empresa para verificar processos de falência/recuperação.",
+    urlEmissao:"https://certidoesunificadas.app.tjpe.jus.br/",
+    urlConsulta:"https://certidoesunificadas.app.tjpe.jus.br/",
+    instrucao:"Acesse o portal unificado do TJPE e solicite a Certidão Negativa de Falência e Recuperação Judicial.",
     tipo:"Judicial",
   },
   {
@@ -455,16 +455,20 @@ const PROP0 = {titulo:"",certameId:"",itens:[{desc:"",unidade:"UN",qtd:1,unit:""
 
 // ── CSS Dark/Light/Font dinamico ──
 function useTheme() {
-  const [dark, setDark] = useState(()=> localStorage.getItem("lf5_dark")==="true");
-  const [fontSize, setFontSize] = useState(()=> localStorage.getItem("lf5_fs")||"normal");
+  const [dark, setDark] = useState(()=> localStorage.getItem("lf_dark")==="true");
+  const [fontSize, setFontSize] = useState(()=> localStorage.getItem("lf_fs")||"normal");
   useEffect(()=>{
     const root = document.documentElement;
     const sz = {small:"13px", normal:"14px", large:"16px"}[fontSize]||"14px";
+    // Aplica em AMBAS as variáveis para garantir compatibilidade
     root.style.setProperty("--fs-base", sz);
+    root.style.setProperty("--fs", sz);
+    // Aplica diretamente no body também
+    document.body.style.fontSize = sz;
     if(dark) root.setAttribute("data-theme","dark");
     else root.removeAttribute("data-theme");
-    localStorage.setItem("lf5_dark", dark);
-    localStorage.setItem("lf5_fs", fontSize);
+    localStorage.setItem("lf_dark", String(dark));
+    localStorage.setItem("lf_fs", fontSize);
   },[dark,fontSize]);
   return {dark, setDark, fontSize, setFontSize};
 }
@@ -723,28 +727,67 @@ export default function App() {
     setAiLoading(false);
   };
 
-  // ── PNCP ──
+  // ── PNCP (endpoint atualizado 2025) ──
   const fetchPNCP = useCallback(async(termo="",pag=1)=>{
     setPncpLoading(true); setPncpError(null);
     try{
-      const hoje=new Date(); const ini=new Date(hoje); ini.setDate(ini.getDate()-1); const fim=new Date(hoje); fim.setDate(fim.getDate()+90);
+      const hoje=new Date();
+      const ini=new Date(hoje); ini.setDate(ini.getDate()-30); // últimos 30 dias
+      const fim=new Date(hoje); fim.setDate(fim.getDate()+180); // próximos 180 dias
       const di=`${ini.getFullYear()}${pad2(ini.getMonth()+1)}${pad2(ini.getDate())}`;
       const df=`${fim.getFullYear()}${pad2(fim.getMonth()+1)}${pad2(fim.getDate())}`;
-      const res=await fetch(`${PNCP_BASE}/contratacoes/proposta?dataInicial=${di}&dataFinal=${df}&pagina=${pag}&tamanhoPagina=10`);
-      if(!res.ok) throw new Error(res.status);
-      const json=await res.json();
-      const items=(json.data||json||[]).map(c=>({
-        id:c.numeroControlePNCP||uid(), numeroControlePNCP:c.numeroControlePNCP,
-        modalidade:MODALIDADES_PNCP[c.modalidadeId||c.codigoModalidadeContratacao]||"Licitação",
-        objeto:c.objetoCompra||c.objeto||"Sem descrição",
-        orgao:c.unidadeOrgao?.nomeUnidade||c.orgaoEntidade?.razaoSocial||"Órgão Público",
-        uf:c.unidadeOrgao?.ufSigla||c.ufSigla||"BR",
-        valor:c.valorTotalEstimado||c.valor||0,
-        dataAbertura:c.dataAberturaProposta||c.dataAbertura,
-        dataPublicacao:c.dataPublicacaoPncp||c.dataPublicacao, fonte:"PNCP",
-      }));
+      // Tenta primeiro endpoint v1/contratacoes
+      let items=[];
+      let ok=false;
+      // Endpoint 1: contratacoes/proposta
+      try{
+        const r1=await fetch(`${PNCP_BASE}/contratacoes/proposta?dataInicial=${di}&dataFinal=${df}&pagina=${pag}&tamanhoPagina=12`);
+        if(r1.ok){
+          const j=await r1.json();
+          const arr=j.data||j||[];
+          if(Array.isArray(arr)&&arr.length>0){
+            items=arr.map(c=>({
+              id:c.numeroControlePNCP||uid(), ncp:c.numeroControlePNCP,
+              modalidade:MODALIDADES_PNCP[c.modalidadeId||c.codigoModalidadeContratacao]||"Licitação",
+              objeto:c.objetoCompra||c.objetoContratacao||c.objeto||"Sem descrição",
+              orgao:c.unidadeOrgao?.nomeUnidade||c.orgaoEntidade?.razaoSocial||"Órgão Público",
+              uf:c.unidadeOrgao?.ufSigla||c.ufSigla||"BR",
+              valor:c.valorTotalEstimado||c.valorTotalHomologado||c.valor||0,
+              dataAbertura:c.dataAberturaProposta||c.dataAberturaPropostaInicio||c.dataAbertura,
+              dataPublicacao:c.dataPublicacaoPncp||c.dataInclusao||c.dataPublicacao,
+              fonte:"PNCP",
+            }));
+            ok=true;
+          }
+        }
+      }catch(e){console.warn("Endpoint 1 falhou:",e);}
+      // Endpoint 2: contratacoes/publicacao (fallback)
+      if(!ok){
+        try{
+          const r2=await fetch(`${PNCP_BASE}/contratacoes/publicacao?dataInicial=${di}&dataFinal=${df}&pagina=${pag}&tamanhoPagina=12`);
+          if(r2.ok){
+            const j2=await r2.json();
+            const arr2=j2.data||j2||[];
+            if(Array.isArray(arr2)&&arr2.length>0){
+              items=arr2.map(c=>({
+                id:c.numeroControlePNCP||uid(), ncp:c.numeroControlePNCP,
+                modalidade:MODALIDADES_PNCP[c.modalidadeId||c.codigoModalidadeContratacao]||"Licitação",
+                objeto:c.objetoCompra||c.objetoContratacao||c.objeto||"Sem descrição",
+                orgao:c.unidadeOrgao?.nomeUnidade||c.orgaoEntidade?.razaoSocial||"Órgão Público",
+                uf:c.unidadeOrgao?.ufSigla||c.ufSigla||"BR",
+                valor:c.valorTotalEstimado||c.valorTotalHomologado||c.valor||0,
+                dataAbertura:c.dataAberturaProposta||c.dataAberturaPropostaInicio||c.dataAbertura,
+                dataPublicacao:c.dataPublicacaoPncp||c.dataInclusao||c.dataPublicacao,
+                fonte:"PNCP",
+              }));
+              ok=true;
+            }
+          }
+        }catch(e){console.warn("Endpoint 2 falhou:",e);}
+      }
+      if(!ok) throw new Error("Sem dados");
       setPncpItems(termo?items.filter(i=>(i.objeto+i.orgao).toLowerCase().includes(termo.toLowerCase())):items);
-    }catch{setPncpError("Não foi possível conectar à API do PNCP."); setPncpItems([]);}
+    }catch{setPncpError("Não foi possível carregar licitações do PNCP. Verifique sua conexão e tente novamente."); setPncpItems([]);}
     setPncpLoading(false);
   },[]);
 
@@ -922,7 +965,7 @@ export default function App() {
       <aside id="sidebar" style={{...RS.sidebar,transform:sidebarOpen?"translateX(0)":"translateX(-260px)"}}>
         <div style={RS.sbLogo} onClick={()=>setSidebarOpen(false)}>
           <span style={{fontSize:24,color:"#60a5fa"}}>⚖</span>
-          <div><div style={{fontSize:15,fontWeight:800,color:"#f1f5f9"}}>LicitaFlow v5</div><div style={{fontSize:10,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{empresa?.nomeFantasia||empresa?.razaoSocial||"Nenhuma empresa"}</div></div>
+          <div><div style={{fontSize:15,fontWeight:800,color:"#f1f5f9"}}>LicitaFlow v7</div><div style={{fontSize:10,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{empresa?.nomeFantasia||empresa?.razaoSocial||"Nenhuma empresa"}</div></div>
         </div>
 
         {/* Seletor de Empresa */}
@@ -948,7 +991,7 @@ export default function App() {
         <nav style={{flex:1,padding:"10px 8px",display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
           {[
             {id:"dashboard",ic:"▣",lb:"Dashboard"},
-            {id:"empresa",ic:"🏢",lb:"Minha Empresa"},
+            {id:"empresa",ic:"🏢",lb:"Cadastrar Empresa"},
             {id:"fontes",ic:"🌐",lb:"Buscar (PNCP)"},
             {id:"certames",ic:"📁",lb:"Meus Certames",bd:stats.abertos},
             {id:"habilitacao",ic:"☑",lb:"Habilitação"},
@@ -982,25 +1025,44 @@ export default function App() {
 
       {/* ── HEADER ── */}
       <header style={RS.hdr}>
+        {/* Esquerda: menu burger + nome da página */}
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <button id="menu-btn" style={RS.menuBtn} onClick={()=>setSidebarOpen(v=>!v)}>☰</button>
-          <span style={{fontSize:17,color:"#1d4ed8",fontWeight:900}}>⚖ LicitaFlow</span>
+          <span style={{fontSize:15,fontWeight:700,color:"var(--txt)",display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontSize:18,color:"#1d4ed8"}}>⚖</span>
+            <span style={{fontWeight:900,color:"#1d4ed8"}}>LicitaFlow</span>
+            {empresa&&<span style={{color:"var(--txt-sub)",fontWeight:400,fontSize:13}}>· {(empresa.nomeFantasia||empresa.razaoSocial||"").slice(0,30)}</span>}
+          </span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          {/* Botão troca rápida de empresa (se tiver mais de 1) */}
+        {/* Direita: troca empresa + notif + avatar + sair */}
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
           {empresasList.length>1&&(
-            <select style={{background:"var(--bg-card)",color:"var(--txt)",border:"1.5px solid var(--border)",borderRadius:8,padding:"5px 8px",fontSize:11,fontWeight:700,cursor:"pointer",maxWidth:120}}
+            <select style={{background:"var(--bg-input)",color:"var(--txt)",border:"1.5px solid var(--border)",borderRadius:8,padding:"5px 10px",fontSize:11,fontWeight:700,cursor:"pointer",maxWidth:140}}
               value={empresaAtualId||""}
               onChange={e=>trocarEmpresa(e.target.value)}>
               {empresasList.map(e=>(
-                <option key={e.id} value={e.id}>{(e.nomeFantasia||e.razaoSocial||"").slice(0,15)}</option>
+                <option key={e.id} value={e.id}>{(e.nomeFantasia||e.razaoSocial||"").slice(0,16)}</option>
               ))}
             </select>
           )}
-          <button style={{...RS.notifBtn,background:notifs.length>0?"#fef2f2":"none"}} onClick={()=>setShowNotifs(v=>!v)}>
+          <button
+            style={{background:notifs.length>0?"#fef2f2":"none",border:"none",cursor:"pointer",fontSize:18,padding:"6px 8px",borderRadius:8,position:"relative"}}
+            onClick={()=>setShowNotifs(v=>!v)}
+            title="Notificações">
             🔔{notifs.length>0&&<span style={RS.nDot}>{notifs.length}</span>}
           </button>
-          <div style={RS.avatar} onClick={()=>setTab("empresa")} title="Minha Empresa">{(empresa?.razaoSocial||"LF").slice(0,2).toUpperCase()}</div>
+          <div
+            style={{...RS.avatar,background:"linear-gradient(135deg,#1d4ed8,#7c3aed)"}}
+            onClick={()=>setTab("empresa")}
+            title={empresa?.razaoSocial||"Cadastrar empresa"}>
+            {(empresa?.razaoSocial||"LF").slice(0,2).toUpperCase()}
+          </div>
+          <button
+            title="Sair do sistema"
+            onClick={()=>{sessionStorage.removeItem("lf_auth");window.location.reload();}}
+            style={{background:"none",border:"1.5px solid var(--border)",borderRadius:8,padding:"5px 8px",fontSize:12,color:"var(--txt-sub)",cursor:"pointer",fontWeight:700}}>
+            ⏻
+          </button>
         </div>
       </header>
 
