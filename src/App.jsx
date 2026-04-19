@@ -1,7 +1,14 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 
 // ══════════════════════════════════════════════════════════════════════
-// CERTIDÕES — portais oficiais e metadados
+// ADMIN CONFIG — altere a senha aqui antes de fazer deploy
+// ══════════════════════════════════════════════════════════════════════
+const ADMIN_SENHA = "licitaflow@admin2025";
+const APP_SENHA = "licitaflow2025"; // Senha de acesso ao sistema
+const APP_VERSION = "v7";
+
+// ══════════════════════════════════════════════════════════════════════
+// CERTIDÕES — portais oficiais ATUALIZADOS 2025
 // ══════════════════════════════════════════════════════════════════════
 const CERTIDOES_CONFIG = [
   {
@@ -12,9 +19,9 @@ const CERTIDOES_CONFIG = [
     icon:"🏦",
     validade:180,
     cor:"#1d4ed8",
-    urlEmissao:"https://solucoes.receita.fazenda.gov.br/Servicos/certidaointernet/PJ/Emitir",
-    urlConsulta:"https://solucoes.receita.fazenda.gov.br/Servicos/certidaointernet/PJ/Emitir",
-    instrucao:"Informe o CNPJ no portal da Receita Federal para emitir/consultar a certidão.",
+    urlEmissao:"https://servicos.receitafederal.gov.br/servico/certidoes/",
+    urlConsulta:"https://servicos.receitafederal.gov.br/servico/certidoes/",
+    instrucao:"Acesse o portal da Receita Federal, clique em 'Emitir certidão de regularidade fiscal' e informe o CNPJ.",
     tipo:"Fiscal Federal",
   },
   {
@@ -27,7 +34,7 @@ const CERTIDOES_CONFIG = [
     cor:"#f97316",
     urlEmissao:"https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf",
     urlConsulta:"https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf",
-    instrucao:"Acesse o portal da CAIXA e informe o CNPJ para consultar e emitir o CRF.",
+    instrucao:"Acesse o portal da CAIXA e informe o CNPJ (só números) para consultar e emitir o CRF.",
     tipo:"Fiscal FGTS",
   },
   {
@@ -38,9 +45,9 @@ const CERTIDOES_CONFIG = [
     icon:"⚖️",
     validade:180,
     cor:"#7c3aed",
-    urlEmissao:"https://cndt-certidao.tst.jus.br/gerarCertidao.faces",
-    urlConsulta:"https://cndt-certidao.tst.jus.br/gerarCertidao.faces",
-    instrucao:"Acesse o TST e informe o CNPJ para emitir a CNDT gratuitamente.",
+    urlEmissao:"https://www.tst.jus.br/certidao",
+    urlConsulta:"https://www.tst.jus.br/certidao",
+    instrucao:"Acesse o portal do TST, informe o CNPJ e clique em 'Emitir Certidão'. Gratuito e válido por 180 dias.",
     tipo:"Trabalhista",
   },
   {
@@ -66,7 +73,7 @@ const CERTIDOES_CONFIG = [
     cor:"#16a34a",
     urlEmissao:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
     urlConsulta:"https://efisco.sefaz.pe.gov.br/sfi_trb_gce/PREmitirCertidao",
-    instrucao:"Acesse o portal da SEFAZ-PE para emitir certidão de débitos estaduais.",
+    instrucao:"Acesse o eFisco da SEFAZ-PE, informe o CNPJ e emita a certidão de débitos estaduais (ICMS).",
     tipo:"Fiscal Estadual",
   },
   {
@@ -79,33 +86,33 @@ const CERTIDOES_CONFIG = [
     cor:"#d97706",
     urlEmissao:"",
     urlConsulta:"",
-    instrucao:"Acesse o portal da prefeitura do seu município. O link varia conforme a cidade — cadastre manualmente.",
+    instrucao:"O link varia conforme o município. Acesse o portal da prefeitura da cidade onde a empresa está registrada e busque por 'certidão negativa' ou 'emissão de certidões'.",
     tipo:"Fiscal Municipal",
   },
   {
     id:"falencia",
-    nome:"Certidão Negativa de Falência/Concordata",
+    nome:"Certidão Negativa de Falência e Recuperação Judicial",
     sigla:"Cert. Falência",
-    orgao:"TJPE — Distribuição",
+    orgao:"TJPE — 1ª e 2ª Vara Empresarial",
     icon:"📋",
     validade:30,
     cor:"#dc2626",
-    urlEmissao:"https://www.tjpe.jus.br/web/guest/certidoes",
-    urlConsulta:"https://www.tjpe.jus.br/web/guest/certidoes",
-    instrucao:"Solicite no portal do TJPE — Certidões de Distribuição Cível.",
+    urlEmissao:"https://srv01.tjpe.jus.br/consultaprocessual/",
+    urlConsulta:"https://srv01.tjpe.jus.br/consultaprocessual/",
+    instrucao:"Acesse o portal do TJPE (consulta processual) e busque pela empresa para verificar processos de falência/recuperação.",
     tipo:"Judicial",
   },
   {
     id:"simples",
-    nome:"Comprovante de Opção pelo Simples Nacional",
+    nome:"Comprovante Simples Nacional / MEI",
     sigla:"Simples Nacional",
     orgao:"Receita Federal",
     icon:"📄",
     validade:365,
     cor:"#0891b2",
-    urlEmissao:"https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
-    urlConsulta:"https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao",
-    instrucao:"Acesse o portal do Simples Nacional para consultar a situação e emitir o comprovante.",
+    urlEmissao:"https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/simplificados/simples-nacional",
+    urlConsulta:"https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/simplificados/simples-nacional",
+    instrucao:"Acesse o portal da Receita Federal (Simples Nacional) para consultar situação e imprimir comprovante de opção.",
     tipo:"Fiscal Federal",
   },
 ];
@@ -349,6 +356,7 @@ const maskPhone = v => v.replace(/\D/g,"").replace(/(\d{2})(\d)/,"($1) $2").repl
 const DB = {
   async get(k){try{const r=await window.storage.get(k);return r?JSON.parse(r.value):null;}catch{return null;}},
   async set(k,v){try{await window.storage.set(k,JSON.stringify(v));return true;}catch{return false;}},
+  async del(k){try{await window.storage.delete(k);return true;}catch{return false;}},
 };
 
 // ══════════════════════════════════════════════════════════════════════
@@ -363,6 +371,8 @@ const pdfCSS = `<style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'DM Sans',sans-serif;color:#1e293b;padding:52px;font-size:12.5px;line-height:1.75}
+  .timbre{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #1d4ed8}
+  .timbre img{max-height:80px;max-width:300px;object-fit:contain}
   h1{font-size:18px;font-weight:800;color:#1d4ed8;margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
   h2{font-size:13px;font-weight:700;margin:20px 0 8px;border-bottom:2px solid #e2e8f0;padding-bottom:4px}
   .sub{color:#64748b;font-size:11px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid #f1f5f9}
@@ -385,7 +395,9 @@ const pdfCSS = `<style>
 
 const gerarPDFDeclaracao = (decConfig, empresa, certame) => {
   const texto = decConfig.texto(empresa, certame);
+  const timbreHtml = empresa?.timbre ? `<div class="timbre"><img src="${empresa.timbre}" alt="Logo"/></div>` : "";
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${decConfig.nome}</title>${pdfCSS}</head><body>
+    ${timbreHtml}
     <h1>${decConfig.nome}</h1>
     <div class="sub">Emitida em ${new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"})} · Fundamento: ${decConfig.fundamento} · LicitaFlow v5</div>
     ${certame?`<div class="badge">${certame.tipoCertame} nº ${certame.numero||"—"} — ${certame.orgao||""}</div>`:""}
@@ -398,7 +410,9 @@ const gerarPDFDeclaracao = (decConfig, empresa, certame) => {
 const gerarPDFProposta = (dados) => {
   const {empresa:e,certame:c,itens,validade,prazoEntrega,obs,titulo} = dados;
   const total=(itens||[]).reduce((a,it)=>a+(parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0),0);
+  const timbreHtml = e?.timbre ? `<div class="timbre"><img src="${e.timbre}" alt="Logo"/></div>` : "";
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposta</title>${pdfCSS}</head><body>
+    ${timbreHtml}
     <h1>Proposta Comercial de Preços</h1>
     <div class="sub">Emitida em ${new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"})} · LicitaFlow v5</div>
     ${c?`<div class="badge">${c.tipoCertame} nº ${c.numero||"—"} — ${c.orgao||""}</div>`:""}
@@ -434,25 +448,60 @@ const gerarPDFProposta = (dados) => {
 // ══════════════════════════════════════════════════════════════════════
 // EMPTY STATES
 // ══════════════════════════════════════════════════════════════════════
-const EMP0 = {razaoSocial:"",nomeFantasia:"",cnpj:"",ie:"",im:"",porte:"ME",logradouro:"",numero:"",complemento:"",bairro:"",municipio:"",uf:"PE",cep:"",telefone:"",email:"",site:"",repNome:"",repCargo:"",repCpf:"",repEmail:"",repTelefone:""};
+const EMP0 = {razaoSocial:"",nomeFantasia:"",cnpj:"",ie:"",im:"",porte:"ME",logradouro:"",numero:"",complemento:"",bairro:"",municipio:"",uf:"PE",cep:"",telefone:"",email:"",site:"",repNome:"",repCargo:"",repCpf:"",repEmail:"",repTelefone:"",timbre:""};
 const CERT0 = {titulo:"",tipoCertame:"Pregão Eletrônico",numero:"",processo:"",orgao:"",uf:"PE",objeto:"",valor:"",dataPublicacao:"",dataAbertura:"",dataEncerramento:"",editalUrl:"",fonte:"Manual",status:"Aberto",obs:"",monitorando:true,resultado:"Em andamento",valorProposta:"",checklist:[],impugnacoes:[],historico:[]};
 const DOC0 = {nome:"",tipo:"Certidão",validade:"",arquivo:""};
 const PROP0 = {titulo:"",certameId:"",itens:[{desc:"",unidade:"UN",qtd:1,unit:""}],validade:"60",prazoEntrega:"",obs:""};
+
+// ── CSS Dark/Light/Font dinamico ──
+function useTheme() {
+  const [dark, setDark] = useState(()=> localStorage.getItem("lf5_dark")==="true");
+  const [fontSize, setFontSize] = useState(()=> localStorage.getItem("lf5_fs")||"normal");
+  useEffect(()=>{
+    const root = document.documentElement;
+    const sz = {small:"13px", normal:"14px", large:"16px"}[fontSize]||"14px";
+    root.style.setProperty("--fs-base", sz);
+    if(dark) root.setAttribute("data-theme","dark");
+    else root.removeAttribute("data-theme");
+    localStorage.setItem("lf5_dark", dark);
+    localStorage.setItem("lf5_fs", fontSize);
+  },[dark,fontSize]);
+  return {dark, setDark, fontSize, setFontSize};
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // APP
 // ══════════════════════════════════════════════════════════════════════
 export default function App() {
+  const {dark, setDark, fontSize, setFontSize} = useTheme();
+
+  // ── AUTH ──
+  const [authed, setAuthed] = useState(()=>sessionStorage.getItem("lf_auth")==="1");
+  const [loginSenha, setLoginSenha] = useState("");
+  const [loginErr, setLoginErr] = useState("");
+
+  const handleLogin = () => {
+    if(loginSenha === APP_SENHA){ sessionStorage.setItem("lf_auth","1"); setAuthed(true); setLoginErr(""); }
+    else { setLoginErr("Senha incorreta. Tente novamente."); }
+  };
+
   const [tab, setTab] = useState("dashboard");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Data
+  // ── MULTI-EMPRESA ──
+  const [empresasList, setEmpresasList] = useState([]); // lista de todas as empresas
+  const [empresaAtualId, setEmpresaAtualId] = useState(null); // id da empresa ativa
+  const [adminMode, setAdminMode] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminSenhaInput, setAdminSenhaInput] = useState("");
+
+  // Data (escopo da empresa atual)
   const [empresa, setEmpresa] = useState(null);
   const [certames, setCertames] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [propostas, setPropostas] = useState([]);
-  const [certidoes, setCertidoes] = useState({}); // { id: { dataEmissao, dataValidade, obs } }
+  const [certidoes, setCertidoes] = useState({});
 
   // UI
   const [selectedCert, setSelectedCert] = useState(null);
@@ -486,31 +535,121 @@ export default function App() {
   useEffect(()=>{
     (async()=>{
       setLoading(true);
-      const [e,c,d,p,ct] = await Promise.all([DB.get("empresa"),DB.get("certames"),DB.get("documentos"),DB.get("propostas"),DB.get("certidoes")]);
-      setEmpresa(e); setFormEmp(e||EMP0);
-      setCertames(c||[]); setDocumentos(d||[]); setPropostas(p||[]); setCertidoes(ct||{});
+      // Carrega lista de empresas (modo multi)
+      const lista = await DB.get("empresas_lista") || [];
+      setEmpresasList(lista);
+      // ID da empresa ativa
+      const eid = await DB.get("empresa_ativa_id") || (lista[0]?.id || null);
+      setEmpresaAtualId(eid);
+      await carregarEmpresa(eid);
       setLoading(false);
     })();
   },[]);
 
-  // ── EMPRESA ──
+  const carregarEmpresa = async (eid) => {
+    if(!eid) {
+      // fallback: tenta carregar empresa legada (v5 anterior)
+      const e = await DB.get("empresa");
+      if(e) {
+        setEmpresa(e); setFormEmp(e);
+        const [c,d,p,ct] = await Promise.all([DB.get("certames"),DB.get("documentos"),DB.get("propostas"),DB.get("certidoes")]);
+        setCertames(c||[]); setDocumentos(d||[]); setPropostas(p||[]); setCertidoes(ct||{});
+      }
+      return;
+    }
+    const [e,c,d,p,ct] = await Promise.all([
+      DB.get(`emp_${eid}`), DB.get(`certs_${eid}`),
+      DB.get(`docs_${eid}`), DB.get(`props_${eid}`), DB.get(`certreg_${eid}`)
+    ]);
+    setEmpresa(e||null); setFormEmp(e||EMP0);
+    setCertames(c||[]); setDocumentos(d||[]); setPropostas(p||[]); setCertidoes(ct||{});
+  };
+
+  const trocarEmpresa = async (eid) => {
+    setLoading(true);
+    setEmpresaAtualId(eid);
+    await DB.set("empresa_ativa_id", eid);
+    await carregarEmpresa(eid);
+    setTab("dashboard"); setSelectedCert(null);
+    setLoading(false);
+    showToast(`✅ Empresa trocada!`);
+  };
+
+  // ── ADMIN LOGIN ──
+  const entrarAdmin = () => {
+    if(adminSenhaInput === ADMIN_SENHA) {
+      setAdminMode(true);
+      setShowAdminLogin(false);
+      setAdminSenhaInput("");
+      showToast("🔐 Modo Admin ativado!");
+    } else {
+      showToast("Senha incorreta","error");
+    }
+  };
+
+  // ── SAVE EMPRESA (com suporte multi) ──
   const saveEmpresa = async () => {
     if(!formEmp.razaoSocial||!formEmp.cnpj){showToast("Razão Social e CNPJ obrigatórios","error");return;}
-    setSaving(true); await DB.set("empresa",formEmp); setEmpresa(formEmp); setSaving(false);
-    showToast("✅ Empresa salva!"); setTab("dashboard");
+    setSaving(true);
+    let eid = empresaAtualId;
+    // Se não tem id ainda, cria um novo
+    if(!eid) {
+      eid = uid();
+      setEmpresaAtualId(eid);
+      await DB.set("empresa_ativa_id", eid);
+    }
+    const empData = {...formEmp, id: eid};
+    await DB.set(`emp_${eid}`, empData);
+    // Atualiza lista de empresas
+    const novaLista = empresasList.filter(e=>e.id!==eid);
+    novaLista.push({id:eid, razaoSocial:empData.razaoSocial, cnpj:empData.cnpj, nomeFantasia:empData.nomeFantasia});
+    setEmpresasList(novaLista);
+    await DB.set("empresas_lista", novaLista);
+    setEmpresa(empData);
+    setSaving(false);
+    showToast("✅ Empresa salva!");
+    setTab("dashboard");
+  };
+
+  // ── NOVA EMPRESA (admin) ──
+  const criarNovaEmpresa = async () => {
+    const eid = uid();
+    setEmpresaAtualId(eid);
+    await DB.set("empresa_ativa_id", eid);
+    setEmpresa(null); setFormEmp(EMP0);
+    setCertames([]); setDocumentos([]); setPropostas([]); setCertidoes({});
+    setTab("empresa");
+    showToast("📋 Cadastre os dados da nova empresa");
+  };
+
+  const removerEmpresa = async (eid) => {
+    if(!window.confirm("Remover esta empresa e todos os seus dados?")) return;
+    await Promise.all([
+      DB.del(`emp_${eid}`), DB.del(`certs_${eid}`),
+      DB.del(`docs_${eid}`), DB.del(`props_${eid}`), DB.del(`certreg_${eid}`)
+    ]);
+    const novaLista = empresasList.filter(e=>e.id!==eid);
+    setEmpresasList(novaLista);
+    await DB.set("empresas_lista", novaLista);
+    if(empresaAtualId===eid) {
+      const prox = novaLista[0]?.id || null;
+      await trocarEmpresa(prox);
+    }
+    showToast("Empresa removida");
   };
 
   // ── CERTAMES ──
+  const eid = empresaAtualId; // shorthand para chave de storage
   const saveCert = async (cert=formCert) => {
     const isNew=!cert.id;
     const item=isNew?{...cert,id:uid(),criadoEm:new Date().toISOString(),checklist:HABILITACAO_PADRAO.map(h=>({...h,status:"pendente"})),impugnacoes:[],historico:[{id:uid(),data:new Date().toISOString(),acao:"Certame cadastrado"}]}:cert;
     const lista=isNew?[...certames,item]:certames.map(c=>c.id===cert.id?item:c);
-    setCertames(lista); await DB.set("certames",lista);
+    setCertames(lista); await DB.set(eid?`certs_${eid}`:"certames",lista);
     setFormCert(CERT0); setModalType(null); showToast("✅ Certame salvo!"); return item;
   };
-  const delCert = async id => { const l=certames.filter(c=>c.id!==id); setCertames(l); await DB.set("certames",l); if(selectedCert?.id===id){setSelectedCert(null);setTab("certames");} showToast("Removido"); };
+  const delCert = async id => { const l=certames.filter(c=>c.id!==id); setCertames(l); await DB.set(eid?`certs_${eid}`:"certames",l); if(selectedCert?.id===id){setSelectedCert(null);setTab("certames");} showToast("Removido"); };
   const updateCert = async (id,fields) => {
-    const l=certames.map(c=>c.id===id?{...c,...fields}:c); setCertames(l); await DB.set("certames",l);
+    const l=certames.map(c=>c.id===id?{...c,...fields}:c); setCertames(l); await DB.set(eid?`certs_${eid}`:"certames",l);
     if(selectedCert?.id===id) setSelectedCert(p=>({...p,...fields}));
   };
 
@@ -521,14 +660,14 @@ export default function App() {
     const status=!formDoc.validade?"Válido":d2<=0?"Vencido":d2<=15?"Vencendo":"Válido";
     const item=formDoc.id?{...formDoc,status}:{...formDoc,id:uid(),status,criadoEm:new Date().toISOString()};
     const l=formDoc.id?documentos.map(x=>x.id===formDoc.id?item:x):[...documentos,item];
-    setDocumentos(l); await DB.set("documentos",l); setFormDoc(DOC0); setModalType(null); showToast("✅ Documento salvo!");
+    setDocumentos(l); await DB.set(eid?`docs_${eid}`:"documentos",l); setFormDoc(DOC0); setModalType(null); showToast("✅ Documento salvo!");
   };
-  const delDoc = async id => { const l=documentos.filter(d=>d.id!==id); setDocumentos(l); await DB.set("documentos",l); showToast("Removido"); };
+  const delDoc = async id => { const l=documentos.filter(d=>d.id!==id); setDocumentos(l); await DB.set(eid?`docs_${eid}`:"documentos",l); showToast("Removido"); };
 
   // ── CERTIDÕES ──
   const saveCertidao = async () => {
     const updated={...certidoes,[formCertidao.id]:{dataEmissao:formCertidao.dataEmissao,dataValidade:formCertidao.dataValidade,obs:formCertidao.obs,atualizadoEm:new Date().toISOString()}};
-    setCertidoes(updated); await DB.set("certidoes",updated); setModalType(null); showToast("✅ Certidão atualizada!");
+    setCertidoes(updated); await DB.set(eid?`certreg_${eid}`:"certidoes",updated); setModalType(null); showToast("✅ Certidão atualizada!");
   };
 
   const certidaoStatus = (cfgId) => {
@@ -545,9 +684,9 @@ export default function App() {
     if(!formProp.titulo){showToast("Título obrigatório","error");return;}
     const item=formProp.id?formProp:{...formProp,id:uid(),criadoEm:new Date().toISOString()};
     const l=formProp.id?propostas.map(p=>p.id===formProp.id?item:p):[...propostas,item];
-    setPropostas(l); await DB.set("propostas",l); showToast("✅ Proposta salva!");
+    setPropostas(l); await DB.set(eid?`props_${eid}`:"propostas",l); showToast("✅ Proposta salva!");
   };
-  const delProp = async id => { const l=propostas.filter(p=>p.id!==id); setPropostas(l); await DB.set("propostas",l); showToast("Removida"); };
+  const delProp = async id => { const l=propostas.filter(p=>p.id!==id); setPropostas(l); await DB.set(eid?`props_${eid}`:"propostas",l); showToast("Removida"); };
 
   // ── HABILITAÇÃO ──
   const toggleHab = async (certId,habId,status) => {
@@ -671,9 +810,43 @@ export default function App() {
   const totalProp = (formProp.itens||[]).reduce((a,it)=>a+(parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0),0);
   const NCOL = {urgente:"#dc2626",alerta:"#d97706",info:"#1d4ed8"};
 
+  // ══ LOGIN ══
+  if(!authed) return(
+    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"'DM Sans',system-ui,sans-serif"}}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}input{font-family:inherit}"}</style>
+      <div style={{width:"100%",maxWidth:440}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:96,height:96,borderRadius:24,background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",boxShadow:"0 20px 60px #1d4ed860",marginBottom:20,animation:"float 3s ease-in-out infinite"}}>
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><rect x="24" y="4" width="4" height="44" rx="2" fill="white" opacity="0.9"/><rect x="6" y="10" width="40" height="4" rx="2" fill="white" opacity="0.9"/><path d="M8 14 L20 38 H8 Z" fill="white" opacity="0.7"/><path d="M44 14 L32 38 H44 Z" fill="white" opacity="0.7"/><circle cx="26" cy="8" r="4" fill="#60a5fa"/></svg>
+          </div>
+          <h1 style={{fontSize:34,fontWeight:900,color:"#f1f5f9",letterSpacing:"-1px",marginBottom:6}}>LicitaFlow</h1>
+          <p style={{fontSize:14,color:"#64748b",fontWeight:500}}>{APP_VERSION} — Gestão Inteligente de Licitações Públicas</p>
+        </div>
+        <div style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:32}}>
+          <div style={{marginBottom:22}}>
+            <h2 style={{fontSize:20,fontWeight:800,color:"#f1f5f9",marginBottom:4}}>Bem-vindo de volta</h2>
+            <p style={{fontSize:13,color:"#64748b"}}>Digite sua senha para acessar a plataforma</p>
+          </div>
+          <div style={{marginBottom:16}}>
+            <label style={{display:"block",fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".5px",marginBottom:8}}>Senha de Acesso</label>
+            <input type="password" value={loginSenha} onChange={e=>setLoginSenha(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="••••••••••••" style={{width:"100%",background:"rgba(255,255,255,0.08)",border:"1.5px solid rgba(255,255,255,0.15)",borderRadius:12,padding:"13px 16px",fontSize:15,color:"#f1f5f9",outline:"none",letterSpacing:2}} autoFocus/>
+            {loginErr&&<div style={{marginTop:8,fontSize:12,color:"#f87171",fontWeight:600}}>⚠️ {loginErr}</div>}
+          </div>
+          <button onClick={handleLogin} style={{width:"100%",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",border:"none",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",boxShadow:"0 8px 24px #1d4ed840"}}>Entrar →</button>
+          <div style={{marginTop:20,padding:"12px 14px",background:"rgba(255,255,255,0.04)",borderRadius:10,border:"1px solid rgba(255,255,255,0.08)"}}>
+            <div style={{fontSize:11,color:"#475569",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:".4px"}}>Acesso padrão</div>
+            <div style={{fontSize:12,color:"#94a3b8"}}>Senha: <span style={{color:"#60a5fa",fontWeight:700,fontFamily:"monospace"}}>{APP_SENHA}</span></div>
+            <div style={{fontSize:11,color:"#475569",marginTop:3}}>Altere <code style={{color:"#60a5fa"}}>APP_SENHA</code> no App.jsx antes do deploy.</div>
+          </div>
+        </div>
+        <div style={{textAlign:"center",marginTop:18,fontSize:11,color:"#334155"}}>LicitaFlow {APP_VERSION} · Dados salvos localmente no navegador</div>
+      </div>
+    </div>
+  );
+
   // ══ ONBOARDING ══
   if(!loading&&!empresa) return(
-    <div style={RS.root}>
+    <div style={RS.root} className="app-layout">
       <style>{CSS}</style>
       <div style={RS.onboard}>
         <div style={{textAlign:"center",marginBottom:20}}>
@@ -746,11 +919,32 @@ export default function App() {
       {toast && <div style={{...RS.toast,background:toast.type==="error"?"#dc2626":"#16a34a"}}>{toast.msg}</div>}
 
       {/* ── SIDEBAR ── */}
-      <aside style={{...RS.sidebar,transform:sidebarOpen?"translateX(0)":"translateX(-260px)"}}>
+      <aside id="sidebar" style={{...RS.sidebar,transform:sidebarOpen?"translateX(0)":"translateX(-260px)"}}>
         <div style={RS.sbLogo} onClick={()=>setSidebarOpen(false)}>
           <span style={{fontSize:24,color:"#60a5fa"}}>⚖</span>
-          <div><div style={{fontSize:15,fontWeight:800,color:"#f1f5f9"}}>LicitaFlow v5</div><div style={{fontSize:10,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{empresa?.nomeFantasia||empresa?.razaoSocial}</div></div>
+          <div><div style={{fontSize:15,fontWeight:800,color:"#f1f5f9"}}>LicitaFlow v5</div><div style={{fontSize:10,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{empresa?.nomeFantasia||empresa?.razaoSocial||"Nenhuma empresa"}</div></div>
         </div>
+
+        {/* Seletor de Empresa */}
+        {empresasList.length>0&&(
+          <div style={{padding:"10px 10px 4px",borderBottom:"1px solid #1e293b"}}>
+            <div style={{fontSize:9,color:"#475569",fontWeight:700,textTransform:"uppercase",letterSpacing:".5px",marginBottom:6}}>Empresa Ativa</div>
+            <select style={{width:"100%",background:"#1e293b",color:"#f1f5f9",border:"1px solid #334155",borderRadius:8,padding:"7px 10px",fontSize:12,fontWeight:600,cursor:"pointer"}}
+              value={empresaAtualId||""}
+              onChange={e=>trocarEmpresa(e.target.value)}>
+              {empresasList.map(e=>(
+                <option key={e.id} value={e.id}>{e.nomeFantasia||e.razaoSocial}</option>
+              ))}
+            </select>
+            {adminMode&&(
+              <button style={{...RS.btnPrimary,width:"100%",marginTop:6,fontSize:11,padding:"6px"}}
+                onClick={()=>{setSidebarOpen(false);criarNovaEmpresa();}}>
+                + Nova Empresa
+              </button>
+            )}
+          </div>
+        )}
+
         <nav style={{flex:1,padding:"10px 8px",display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
           {[
             {id:"dashboard",ic:"▣",lb:"Dashboard"},
@@ -765,6 +959,7 @@ export default function App() {
             {id:"documentos",ic:"📄",lb:"Documentos"},
             {id:"propostas",ic:"📝",lb:"Propostas"},
             {id:"declaracoes",ic:"📜",lb:"Declarações"},
+            {id:"configuracoes",ic:"⚙️",lb:"Configurações"},
           ].map(n=>(
             <button key={n.id} style={{...RS.sbItem,...(tab===n.id?RS.sbItemOn:{})}}
               onClick={()=>{setTab(n.id);setSidebarOpen(false);if(n.id!=="certames")setSelectedCert(null);if(n.id!=="fontes")setPncpSelected(null);}}>
@@ -774,23 +969,54 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div style={{padding:"12px 16px",borderTop:"1px solid #1e293b",fontSize:10,color:"#475569"}}>{empresa?.cnpj}</div>
+        <div style={{padding:"12px 16px",borderTop:"1px solid #1e293b",fontSize:10,color:"#475569",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span>{empresa?.cnpj||"—"}</span>
+          {adminMode
+            ? <span style={{background:"#16a34a",color:"#fff",borderRadius:6,padding:"2px 7px",fontSize:9,fontWeight:700}}>ADMIN</span>
+            : <button style={{background:"none",border:"1px solid #334155",color:"#64748b",borderRadius:6,padding:"2px 7px",fontSize:9,fontWeight:700,cursor:"pointer"}}
+                onClick={()=>setShowAdminLogin(true)}>🔐 Admin</button>
+          }
+        </div>
       </aside>
-      {sidebarOpen&&<div style={RS.overlay} onClick={()=>setSidebarOpen(false)}/>}
+      {sidebarOpen&&<div id="sidebar-overlay" style={RS.overlay} onClick={()=>setSidebarOpen(false)}/>}
 
       {/* ── HEADER ── */}
       <header style={RS.hdr}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <button style={RS.menuBtn} onClick={()=>setSidebarOpen(v=>!v)}>☰</button>
+          <button id="menu-btn" style={RS.menuBtn} onClick={()=>setSidebarOpen(v=>!v)}>☰</button>
           <span style={{fontSize:17,color:"#1d4ed8",fontWeight:900}}>⚖ LicitaFlow</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {/* Botão troca rápida de empresa (se tiver mais de 1) */}
+          {empresasList.length>1&&(
+            <select style={{background:"var(--bg-card)",color:"var(--txt)",border:"1.5px solid var(--border)",borderRadius:8,padding:"5px 8px",fontSize:11,fontWeight:700,cursor:"pointer",maxWidth:120}}
+              value={empresaAtualId||""}
+              onChange={e=>trocarEmpresa(e.target.value)}>
+              {empresasList.map(e=>(
+                <option key={e.id} value={e.id}>{(e.nomeFantasia||e.razaoSocial||"").slice(0,15)}</option>
+              ))}
+            </select>
+          )}
           <button style={{...RS.notifBtn,background:notifs.length>0?"#fef2f2":"none"}} onClick={()=>setShowNotifs(v=>!v)}>
             🔔{notifs.length>0&&<span style={RS.nDot}>{notifs.length}</span>}
           </button>
-          <div style={RS.avatar} onClick={()=>setTab("empresa")} title="Minha Empresa">{(empresa?.razaoSocial||"E").slice(0,2).toUpperCase()}</div>
+          <div style={RS.avatar} onClick={()=>setTab("empresa")} title="Minha Empresa">{(empresa?.razaoSocial||"LF").slice(0,2).toUpperCase()}</div>
         </div>
       </header>
+
+      {/* ── MODAL LOGIN ADMIN ── */}
+      {showAdminLogin&&(
+        <div style={RS.mOverlay} onClick={()=>setShowAdminLogin(false)}>
+          <div style={{...RS.modal,maxWidth:360}} onClick={e=>e.stopPropagation()}>
+            <div style={RS.mHdr}><span>🔐 Acesso Administrativo</span><button style={{background:"none",border:"none",fontSize:22,cursor:"pointer"}} onClick={()=>setShowAdminLogin(false)}>×</button></div>
+            <div style={RS.mBody}>
+              <p style={{fontSize:13,color:"#64748b",marginBottom:14}}>Digite a senha de administrador para gerenciar múltiplas empresas.</p>
+              <FG l="Senha Admin"><FI type="password" value={adminSenhaInput} onChange={e=>setAdminSenhaInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&entrarAdmin()} placeholder="••••••••"/></FG>
+              <button style={{...RS.btnPrimary,width:"100%",marginTop:12}} onClick={entrarAdmin}>🔐 Entrar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── NOTIF PANEL ── */}
       {showNotifs&&(
@@ -829,7 +1055,7 @@ export default function App() {
       )}
 
       {/* ══ MAIN ══ */}
-      <main style={RS.main} onClick={()=>showNotifs&&setShowNotifs(false)}>
+      <main id="main-area" style={{...RS.main,flex:1}} onClick={()=>showNotifs&&setShowNotifs(false)}>
 
         {/* DASHBOARD */}
         {tab==="dashboard"&&(
@@ -1505,11 +1731,95 @@ export default function App() {
             </div>
           </div>
         )}
+        {/* CONFIGURAÇÕES */}
+        {tab==="configuracoes"&&(
+          <div style={RS.pg}>
+            <PgHdr title="⚙️ Configurações"/>
+
+            {/* Aparência */}
+            <div style={RS.card}>
+              <div style={{fontSize:13,fontWeight:800,marginBottom:14}}>🎨 Aparência</div>
+              <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700}}>Tema escuro</div>
+                    <div style={{fontSize:11,color:"#64748b"}}>Fundo preto para uso noturno</div>
+                  </div>
+                  <button onClick={()=>setDark(v=>!v)}
+                    style={{width:48,height:26,borderRadius:13,background:dark?"#1d4ed8":"#e2e8f0",border:"none",cursor:"pointer",position:"relative",transition:"background .2s"}}>
+                    <span style={{position:"absolute",top:3,left:dark?22:2,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 4px #00000030"}}/>
+                  </button>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700}}>Tamanho da fonte</div>
+                    <div style={{fontSize:11,color:"#64748b"}}>Ajuste o tamanho do texto</div>
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    {[{v:"small",lb:"P"},{v:"normal",lb:"M"},{v:"large",lb:"G"}].map(f=>(
+                      <button key={f.v} onClick={()=>setFontSize(f.v)}
+                        style={{width:32,height:32,borderRadius:8,border:"1.5px solid",background:fontSize===f.v?"#1d4ed8":"var(--bg-card)",color:fontSize===f.v?"#fff":"var(--txt-sub)",borderColor:fontSize===f.v?"#1d4ed8":"var(--border)",fontWeight:700,fontSize:12,cursor:"pointer"}}>
+                        {f.lb}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Timbre / Logo */}
+            <div style={RS.card}>
+              <div style={{fontSize:13,fontWeight:800,marginBottom:6}}>🖼 Timbre / Logomarca</div>
+              <div style={{fontSize:12,color:"#64748b",marginBottom:12,lineHeight:1.5}}>
+                Cole a URL de uma imagem (logo da empresa) para ser usada no cabeçalho das declarações e propostas PDF.<br/>
+                Dica: Suba a imagem no <a href="https://imgbb.com" target="_blank" rel="noreferrer" style={{color:"#1d4ed8"}}>imgbb.com</a> ou <a href="https://imgur.com" target="_blank" rel="noreferrer" style={{color:"#1d4ed8"}}>imgur.com</a> e cole o link aqui.
+              </div>
+              <FG l="URL da Logo / Timbre">
+                <FI value={formEmp.timbre||""} onChange={e=>setFormEmp(p=>({...p,timbre:e.target.value}))} placeholder="https://i.ibb.co/sua-logo.png"/>
+              </FG>
+              {formEmp.timbre&&(
+                <div style={{marginTop:10,padding:10,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)",textAlign:"center"}}>
+                  <img src={formEmp.timbre} alt="Timbre" style={{maxHeight:80,maxWidth:"100%",objectFit:"contain"}}
+                    onError={e=>e.target.style.display="none"}/>
+                  <div style={{fontSize:10,color:"#64748b",marginTop:4}}>Prévia do timbre</div>
+                </div>
+              )}
+              <button style={{...RS.btnPrimary,width:"100%",marginTop:10}} onClick={saveEmpresa}>💾 Salvar Timbre</button>
+            </div>
+
+            {/* Admin — Gerenciar Empresas */}
+            {adminMode&&(
+              <div style={RS.card}>
+                <div style={{fontSize:13,fontWeight:800,marginBottom:12}}>🏢 Gerenciar Empresas <span style={{background:"#16a34a",color:"#fff",borderRadius:6,padding:"2px 8px",fontSize:10,marginLeft:6}}>ADMIN</span></div>
+                {empresasList.map(e=>(
+                  <div key={e.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--border-light)"}}>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:700}}>{e.nomeFantasia||e.razaoSocial}</div>
+                      <div style={{fontSize:10,color:"#64748b"}}>{e.cnpj}</div>
+                    </div>
+                    {e.id===empresaAtualId&&<span style={{...RS.pill,background:"#f0fdf4",color:"#16a34a"}}>Ativa</span>}
+                    <button style={{...RS.btnSec,fontSize:11}} onClick={()=>trocarEmpresa(e.id)}>Acessar</button>
+                    <button style={{background:"none",border:"none",color:"#dc2626",cursor:"pointer",fontSize:14}} onClick={()=>removerEmpresa(e.id)}>🗑</button>
+                  </div>
+                ))}
+                <button style={{...RS.btnPrimary,width:"100%",marginTop:12}} onClick={criarNovaEmpresa}>+ Adicionar Nova Empresa</button>
+              </div>
+            )}
+            {!adminMode&&(
+              <div style={{...RS.card,textAlign:"center"}}>
+                <div style={{fontSize:30,marginBottom:8}}>🔐</div>
+                <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Modo Administrador</div>
+                <div style={{fontSize:12,color:"#64748b",marginBottom:12}}>Acesse com a senha de admin para gerenciar múltiplas empresas.</div>
+                <button style={RS.btnPrimary} onClick={()=>setShowAdminLogin(true)}>🔐 Entrar como Admin</button>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* BOTTOM NAV */}
-      <nav style={RS.bnav}>
-        {[{id:"dashboard",ic:"▣",lb:"Início"},{id:"fontes",ic:"🌐",lb:"Buscar"},{id:"certames",ic:"📁",lb:"Certames"},{id:"certidoes",ic:"🏅",lb:"Certidões"},{id:"propostas",ic:"📝",lb:"Propostas"}].map(n=>(
+      <nav id="bnav" style={RS.bnav}>
+        {[{id:"dashboard",ic:"▣",lb:"Início"},{id:"fontes",ic:"🌐",lb:"Buscar"},{id:"certames",ic:"📁",lb:"Certames"},{id:"certidoes",ic:"🏅",lb:"Certidões"},{id:"configuracoes",ic:"⚙️",lb:"Config"}].map(n=>(
           <button key={n.id} style={{...RS.bnavBtn,...(tab===n.id?RS.bnavOn:{})}} onClick={()=>{setTab(n.id);if(n.id!=="certames")setSelectedCert(null);if(n.id!=="fontes")setPncpSelected(null);}}>
             <span style={{fontSize:19,lineHeight:1}}>{n.ic}</span>
             <span style={{fontSize:9,fontWeight:700}}>{n.lb}</span>
@@ -1649,70 +1959,92 @@ const AILoad=()=><div style={{display:"flex",alignItems:"center",gap:8,padding:"
 // STYLES — Totalmente responsivos PC + Mobile
 // ══════════════════════════════════════════════════════════════════════
 const RS = {
-  root:{fontFamily:"'DM Sans','Nunito',sans-serif",background:"#f1f5f9",minHeight:"100vh",color:"#1e293b",display:"flex",flexDirection:"column"},
+  root:{fontFamily:"'DM Sans','Nunito',sans-serif",background:"var(--bg-app)",minHeight:"100vh",color:"var(--txt)",display:"flex",flexDirection:"row"},
   onboard:{maxWidth:640,margin:"0 auto",padding:"32px 20px 100px",width:"100%"},
-  card:{background:"#fff",borderRadius:16,padding:"16px",border:"1px solid #e2e8f0",marginBottom:12},
-  hdr:{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50},
+  card:{background:"var(--bg-card)",borderRadius:16,padding:"16px",border:"1px solid var(--border)",marginBottom:12},
+  hdr:{background:"var(--bg-card)",borderBottom:"1px solid var(--border)",padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50},
   menuBtn:{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"#475569",padding:"4px 6px"},
   notifBtn:{background:"none",border:"none",cursor:"pointer",fontSize:18,padding:"6px 8px",borderRadius:8,position:"relative"},
   nDot:{position:"absolute",top:2,right:2,background:"#dc2626",color:"#fff",borderRadius:"50%",fontSize:8,fontWeight:800,width:14,height:14,display:"flex",alignItems:"center",justifyContent:"center"},
   avatar:{width:32,height:32,borderRadius:"50%",background:"#1d4ed8",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,cursor:"pointer",flexShrink:0},
-  sidebar:{position:"fixed",left:0,top:0,bottom:0,width:260,background:"#0f172a",zIndex:200,transition:"transform .25s",display:"flex",flexDirection:"column"},
+  sidebar:{position:"fixed",left:0,top:0,bottom:0,width:260,background:"#0f172a",zIndex:200,transition:"transform .25s",display:"flex",flexDirection:"column",overflow:"hidden"},
   sbLogo:{display:"flex",alignItems:"center",gap:12,padding:"18px 16px",borderBottom:"1px solid #1e293b",cursor:"pointer"},
   sbItem:{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:10,background:"none",border:"none",color:"#94a3b8",cursor:"pointer",fontSize:13,fontWeight:600,textAlign:"left",width:"100%"},
   sbItemOn:{background:"#1e3a5f",color:"#60a5fa"},
   sbBadge:{marginLeft:"auto",background:"#dc2626",color:"#fff",borderRadius:10,fontSize:10,padding:"2px 6px",fontWeight:700},
   overlay:{position:"fixed",inset:0,background:"#00000055",zIndex:150},
-  notifPanel:{position:"fixed",top:57,right:0,width:300,maxWidth:"92vw",background:"#fff",border:"1px solid #e2e8f0",borderRadius:"0 0 0 14px",boxShadow:"0 8px 30px #00000022",zIndex:200,maxHeight:420,overflowY:"auto"},
+  notifPanel:{position:"fixed",top:57,right:0,width:300,maxWidth:"92vw",background:"var(--bg-card)",border:"1px solid var(--border)",borderRadius:"0 0 0 14px",boxShadow:"0 8px 30px #00000022",zIndex:200,maxHeight:420,overflowY:"auto"},
   mOverlay:{position:"fixed",inset:0,background:"#00000060",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center"},
-  modal:{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:600,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"},
-  mHdr:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid #f1f5f9",fontWeight:700,fontSize:14},
+  modal:{background:"var(--bg-card)",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:600,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"},
+  mHdr:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid var(--border)",fontWeight:700,fontSize:14},
   mBody:{overflowY:"auto",padding:"16px 18px 32px"},
-  main:{flex:1,overflowY:"auto",paddingBottom:72},
-  pg:{padding:"18px 20px",maxWidth:900,margin:"0 auto",width:"100%"},
-  grid4:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:10,marginBottom:18},
+  main:{flex:1,overflowY:"auto",paddingBottom:72,minWidth:0},
+  pg:{padding:"20px 28px",maxWidth:1200,margin:"0 auto",width:"100%"},
+  grid4:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12,marginBottom:20},
   statCard:{borderRadius:14,padding:"14px",border:"1.5px solid",display:"flex",flexDirection:"column",gap:4},
-  section:{background:"#fff",borderRadius:14,padding:"14px 16px",marginBottom:12,border:"1px solid #e2e8f0"},
-  licCard:{background:"#fff",borderRadius:14,padding:"14px",border:"1px solid #e2e8f0",marginBottom:10},
+  section:{background:"var(--bg-card)",borderRadius:14,padding:"14px 16px",marginBottom:12,border:"1px solid var(--border)"},
+  licCard:{background:"var(--bg-card)",borderRadius:14,padding:"14px",border:"1px solid var(--border)",marginBottom:10},
   pill:{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:6,display:"inline-block"},
   iGrid:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8,marginTop:10},
-  iBox:{background:"#f8fafc",borderRadius:10,padding:"10px 12px",border:"1px solid #f1f5f9"},
+  iBox:{background:"var(--bg-input)",borderRadius:10,padding:"10px 12px",border:"1px solid var(--border-light)"},
   subTabs:{display:"flex",gap:4,marginBottom:14,overflowX:"auto",scrollbarWidth:"none"},
-  subTab:{background:"#fff",border:"1.5px solid #e2e8f0",borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:"#64748b",whiteSpace:"nowrap",flexShrink:0},
+  subTab:{background:"var(--bg-card)",border:"1.5px solid var(--border)",borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:"var(--txt-sub)",whiteSpace:"nowrap",flexShrink:0},
   subTabOn:{background:"#1d4ed8",borderColor:"#1d4ed8",color:"#fff"},
-  tlItem:{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid #f8fafc",cursor:"pointer"},
+  tlItem:{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--border-light)",cursor:"pointer"},
   lnkBtn:{background:"none",border:"none",color:"#1d4ed8",fontSize:12,fontWeight:700,cursor:"pointer"},
   backBtn:{background:"none",border:"none",color:"#1d4ed8",fontSize:13,fontWeight:700,cursor:"pointer",padding:"0 0 12px",display:"block"},
-  fi:{border:"1.5px solid #e2e8f0",borderRadius:8,padding:"9px 12px",fontSize:13,color:"#1e293b",outline:"none",fontFamily:"inherit",background:"#fafafa",width:"100%",boxSizing:"border-box"},
+  fi:{border:"1.5px solid var(--border)",borderRadius:8,padding:"9px 12px",fontSize:13,color:"var(--txt)",outline:"none",fontFamily:"inherit",background:"var(--bg-input)",width:"100%",boxSizing:"border-box"},
   btnPrimary:{background:"#1d4ed8",color:"#fff",border:"none",borderRadius:10,padding:"9px 16px",fontSize:13,fontWeight:700,cursor:"pointer"},
   btnSec:{background:"#eff6ff",color:"#1d4ed8",border:"none",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:700,cursor:"pointer"},
-  btnOut:{background:"none",color:"#475569",border:"1.5px solid #e2e8f0",borderRadius:8,padding:"7px 12px",fontSize:12,fontWeight:700,cursor:"pointer"},
+  btnOut:{background:"none",color:"var(--txt-sub)",border:"1.5px solid var(--border)",borderRadius:8,padding:"7px 12px",fontSize:12,fontWeight:700,cursor:"pointer"},
   btnAI:{background:"#1d4ed8",color:"#fff",border:"none",borderRadius:8,padding:"8px 12px",fontSize:12,fontWeight:700,cursor:"pointer"},
-  refreshBtn:{background:"#f1f5f9",border:"none",borderRadius:8,width:36,height:36,fontSize:18,cursor:"pointer",color:"#1d4ed8"},
-  aiTxt:{fontSize:11,color:"#334155",lineHeight:1.7,whiteSpace:"pre-wrap",fontFamily:"inherit",background:"#f8fafc",borderRadius:8,padding:"12px",border:"1px solid #e2e8f0",maxHeight:260,overflowY:"auto"},
+  refreshBtn:{background:"var(--bg-input)",border:"none",borderRadius:8,width:36,height:36,fontSize:18,cursor:"pointer",color:"#1d4ed8"},
+  aiTxt:{fontSize:11,color:"var(--txt-sub)",lineHeight:1.7,whiteSpace:"pre-wrap",fontFamily:"inherit",background:"var(--bg-input)",borderRadius:8,padding:"12px",border:"1px solid var(--border)",maxHeight:260,overflowY:"auto"},
   toast:{position:"fixed",top:66,left:"50%",transform:"translateX(-50%)",color:"#fff",padding:"10px 22px",borderRadius:20,fontSize:13,fontWeight:700,zIndex:999,boxShadow:"0 4px 20px #00000030",whiteSpace:"nowrap"},
-  bnav:{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #e2e8f0",display:"flex",justifyContent:"center",gap:0,padding:"7px 0 10px",zIndex:100},
-  bnavBtn:{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",color:"#94a3b8",padding:"4px 16px",borderRadius:8,minWidth:60},
+  bnav:{position:"fixed",bottom:0,left:0,right:0,background:"var(--bg-card)",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"center",gap:0,padding:"7px 0 10px",zIndex:100},
+  bnavBtn:{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",color:"var(--txt-muted)",padding:"4px 16px",borderRadius:8,minWidth:60},
   bnavOn:{color:"#1d4ed8"},
 };
 
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#f1f5f9;margin:0}
-  ::-webkit-scrollbar{width:4px;height:4px}
-  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-  .hov{transition:transform .12s,box-shadow .12s}
-  .hov:hover{transform:translateY(-1px);box-shadow:0 4px 18px #00000012}
-  input:focus,select:focus,textarea:focus{border-color:#1d4ed8!important}
-  input[type=date]{color-scheme:light}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .spin{animation:spin .8s linear infinite}
-  select option{background:#fff;color:#1e293b}
-  @media(min-width:768px){
-    .hdr-inner{max-width:1200px;margin:0 auto;width:100%}
+  :root{
+    --fs-base:14px;
+    --bg-app:#f1f5f9;--bg-card:#fff;--bg-input:#f8fafc;
+    --txt:#1e293b;--txt-muted:#94a3b8;--txt-sub:#64748b;
+    --border:#e2e8f0;--border-light:#f1f5f9;
+    --blue:#1d4ed8;--blue-lt:#eff6ff;
   }
-  @media(max-width:640px){
-    .hide-mobile{display:none!important}
+  [data-theme="dark"]{
+    --bg-app:#0f172a;--bg-card:#1e293b;--bg-input:#0f172a;
+    --txt:#f1f5f9;--txt-muted:#64748b;--txt-sub:#94a3b8;
+    --border:#334155;--border-light:#1e293b;
+    --blue:#60a5fa;--blue-lt:#1e3a5f;
+  }
+  body{background:var(--bg-app);margin:0;font-size:var(--fs-base);color:var(--txt)}
+  ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  .hov{transition:transform .12s,box-shadow .12s}.hov:hover{transform:translateY(-1px);box-shadow:0 4px 18px #00000012}
+  input:focus,select:focus,textarea:focus{border-color:#1d4ed8!important}
+  input[type=date]{color-scheme:light}[data-theme="dark"] input[type=date]{color-scheme:dark}
+  @keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin .8s linear infinite}
+  select option{background:var(--bg-card);color:var(--txt)}
+  /* Desktop: sidebar sempre visível, sem bottom nav */
+  @media(min-width:900px){
+    .app-layout{display:flex!important}
+    #sidebar{transform:translateX(0)!important;position:relative!important;height:100vh;flex-shrink:0}
+    #sidebar-overlay{display:none!important}
+    #bnav{display:none!important}
+    #menu-btn{display:none!important}
+    #main-area{margin-left:0;padding-bottom:0!important}
+    .pg{padding:20px 28px!important}
+  }
+  /* Mobile: sidebar flutuante, bottom nav */
+  @media(max-width:899px){
+    .app-layout{display:block!important}
+    #sidebar{position:fixed!important;z-index:200;height:100vh}
+    #bnav{display:flex!important}
+    #main-area{padding-bottom:72px!important}
   }
 `;
+

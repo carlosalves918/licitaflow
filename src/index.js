@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { AppProvider } from './context/AppContext';
 
 // Polyfill window.storage usando localStorage
 if (!window.storage) {
@@ -36,9 +35,4 @@ if (!window.storage) {
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-
-root.render(
-  <AppProvider>
-    <App />
-  </AppProvider>
-);
+root.render(<App />);
