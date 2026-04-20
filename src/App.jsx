@@ -110,8 +110,8 @@ const CERTIDOES_CONFIG = [
     icon:"📄",
     validade:365,
     cor:"#0891b2",
-    urlEmissao:"https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/simplificados/simples-nacional",
-    urlConsulta:"https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/simplificados/simples-nacional",
+    urlEmissao:"https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=21",
+    urlConsulta:"https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=21",
     instrucao:"Acesse o portal da Receita Federal (Simples Nacional) para consultar situação e imprimir comprovante de opção.",
     tipo:"Fiscal Federal",
   },
@@ -370,77 +370,109 @@ const openPDF = html => {
 const pdfCSS = `<style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'DM Sans',sans-serif;color:#1e293b;padding:52px;font-size:12.5px;line-height:1.75}
-  .timbre{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #1d4ed8}
-  .timbre img{max-height:80px;max-width:300px;object-fit:contain}
-  h1{font-size:18px;font-weight:800;color:#1d4ed8;margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
-  h2{font-size:13px;font-weight:700;margin:20px 0 8px;border-bottom:2px solid #e2e8f0;padding-bottom:4px}
-  .sub{color:#64748b;font-size:11px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid #f1f5f9}
-  .badge{display:inline-block;padding:3px 12px;border-radius:6px;font-size:11px;font-weight:700;background:#eff6ff;color:#1d4ed8;margin-bottom:16px}
-  .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-  .box{background:#f8fafc;border-radius:7px;padding:9px 12px;border:1px solid #e2e8f0}
-  .lbl{font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase}
-  .val{font-size:12.5px;font-weight:700;color:#1e293b;margin-top:1px}
-  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11.5px}
-  th{background:#1d4ed8;color:#fff;padding:7px 9px;text-align:left;font-size:10px;font-weight:700}
-  td{padding:7px 9px;border-bottom:1px solid #f1f5f9}
+  body{font-family:'DM Sans',sans-serif;color:#1e293b;padding:48px 52px;font-size:13px;line-height:1.8}
+  .timbre{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2.5px solid #1d4ed8;gap:16px}
+  .timbre-logo{flex-shrink:0}
+  .timbre-logo img{max-height:70px;max-width:200px;object-fit:contain;display:block}
+  .timbre-info{flex:1;text-align:right}
+  .timbre-info .empresa-nome{font-size:15px;font-weight:800;color:#0f172a}
+  .timbre-info .empresa-cnpj{font-size:11px;color:#64748b;margin-top:2px}
+  .timbre-info .empresa-end{font-size:10.5px;color:#94a3b8;margin-top:1px}
+  .sem-timbre{border-bottom:2.5px solid #1d4ed8;margin-bottom:20px;padding-bottom:14px;text-align:right}
+  .sem-timbre .empresa-nome{font-size:15px;font-weight:800;color:#0f172a}
+  .sem-timbre .empresa-cnpj{font-size:11px;color:#64748b}
+  h1{font-size:20px;font-weight:900;color:#1d4ed8;margin-bottom:4px;text-align:center;text-transform:uppercase;letter-spacing:.8px}
+  h2{font-size:13.5px;font-weight:700;margin:22px 0 10px;border-bottom:2px solid #e2e8f0;padding-bottom:5px;color:#0f172a}
+  .badge{display:block;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;background:#eff6ff;color:#1d4ed8;margin:10px 0 16px;text-align:center}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+  .box{background:#f8fafc;border-radius:8px;padding:10px 14px;border:1px solid #e2e8f0}
+  .lbl{font-size:9.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+  .val{font-size:13px;font-weight:700;color:#1e293b;margin-top:2px}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12.5px}
+  th{background:#1d4ed8;color:#fff;padding:9px 10px;text-align:left;font-size:11px;font-weight:700}
+  td{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
   tr:nth-child(even) td{background:#f8fafc}
-  .total{font-size:16px;font-weight:800;color:#1d4ed8;text-align:right;margin:12px 0}
-  .footer{margin-top:44px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
-  .dec-body{background:#f8fafc;border-radius:8px;padding:24px 28px;margin-top:14px;line-height:2;border:1px solid #e2e8f0;white-space:pre-wrap;font-size:12px}
-  .sign{margin-top:56px;text-align:center}
-  .sign-line{width:280px;border-top:1.5px solid #1e293b;margin:0 auto 6px}
-  @media print{body{padding:28px}}
+  .total{font-size:18px;font-weight:900;color:#1d4ed8;text-align:right;margin:16px 0;padding:10px 0;border-top:2px solid #e2e8f0}
+  .footer{margin-top:48px;padding:14px 0 0;border-top:1.5px solid #e2e8f0;font-size:10.5px;color:#94a3b8}
+  .footer-main{display:flex;justify-content:space-between;margin-bottom:4px}
+  .footer-addr{text-align:center;font-size:10px;color:#b0bec5;margin-top:4px}
+  .dec-body{background:#f8fafc;border-radius:10px;padding:28px 32px;margin-top:16px;line-height:2.1;border:1px solid #e2e8f0;white-space:pre-wrap;font-size:13px}
+  .sign{margin-top:60px;text-align:center}
+  .sign-line{width:300px;border-top:1.5px solid #1e293b;margin:0 auto 8px}
+  .sign-name{font-size:13px;font-weight:700}
+  .sign-sub{font-size:11.5px;color:#64748b;margin-top:2px}
+  .prop-title{text-align:center;margin:0 auto 20px;padding:12px 24px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-radius:10px;border:1.5px solid #c7d2fe}
+  .prop-title h1{margin:0}
+  @media print{body{padding:24px 32px}}
 </style>`;
 
 const gerarPDFDeclaracao = (decConfig, empresa, certame) => {
   const texto = decConfig.texto(empresa, certame);
-  const timbreHtml = empresa?.timbre ? `<div class="timbre"><img src="${empresa.timbre}" alt="Logo"/></div>` : "";
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${decConfig.nome}</title>${pdfCSS}</head><body>
+  const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const endFull = [empresa?.logradouro, empresa?.numero&&"nº "+empresa.numero, empresa?.bairro, empresa?.municipio&&empresa.municipio+(empresa?.uf?"/"+empresa.uf:""), empresa?.cep].filter(Boolean).join(", ");
+  const timbreHtml = empresa?.timbre
+    ? `<div class="timbre"><div class="timbre-logo"><img src="${esc(empresa.timbre)}" alt="Logo" crossorigin="anonymous"/></div><div class="timbre-info"><div class="empresa-nome">${esc(empresa.razaoSocial)}</div><div class="empresa-cnpj">CNPJ: ${esc(empresa.cnpj)}</div><div class="empresa-end">${esc(endFull)}</div></div></div>`
+    : `<div class="sem-timbre"><div class="empresa-nome">${esc(empresa?.razaoSocial)}</div><div class="empresa-cnpj">CNPJ: ${esc(empresa?.cnpj)}</div></div>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(decConfig.nome)}</title>${pdfCSS}</head><body>
     ${timbreHtml}
-    <h1>${decConfig.nome}</h1>
-    <div class="sub">Emitida em ${new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"})} · Fundamento: ${decConfig.fundamento} · LicitaFlow v5</div>
-    ${certame?`<div class="badge">${certame.tipoCertame} nº ${certame.numero||"—"} — ${certame.orgao||""}</div>`:""}
-    <div class="dec-body">${texto.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
-    <div class="footer"><span>LicitaFlow v5 © ${new Date().getFullYear()} · Documento gerado eletronicamente</span><span>${decConfig.fundamento}</span></div>
+    <h1>${esc(decConfig.nome)}</h1>
+    ${certame?`<div class="badge">${esc(certame.tipoCertame)} nº ${esc(certame.numero||"—")} — ${esc(certame.orgao||"")}</div>`:""}
+    <div class="dec-body">${esc(texto)}</div>
+    <div class="footer">
+      <div class="footer-main"><span>LicitaFlow v7 © ${new Date().getFullYear()} · Documento gerado eletronicamente</span><span>${esc(decConfig.fundamento)}</span></div>
+      <div class="footer-addr">${esc(empresa?.razaoSocial)} · CNPJ ${esc(empresa?.cnpj)} · ${esc(endFull)}</div>
+    </div>
   </body></html>`;
   openPDF(html);
 };
 
 const gerarPDFProposta = (dados) => {
-  const {empresa:e,certame:c,itens,validade,prazoEntrega,obs,titulo} = dados;
+  const {empresa:e,certame:c,itens,validade,prazoEntrega,obs,titulo,tipo,banco,agencia,conta,pix} = dados;
   const total=(itens||[]).reduce((a,it)=>a+(parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0),0);
-  const timbreHtml = e?.timbre ? `<div class="timbre"><img src="${e.timbre}" alt="Logo"/></div>` : "";
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposta</title>${pdfCSS}</head><body>
+  const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const endFull = [e?.logradouro, e?.numero&&"nº "+e.numero, e?.bairro, e?.municipio&&e.municipio+(e?.uf?"/"+e.uf:""), e?.cep].filter(Boolean).join(", ");
+  const isProp = tipo==="readequada";
+  const timbreHtml = e?.timbre
+    ? `<div class="timbre"><div class="timbre-logo"><img src="${esc(e.timbre)}" alt="Logo" crossorigin="anonymous"/></div><div class="timbre-info"><div class="empresa-nome">${esc(e.razaoSocial)}</div><div class="empresa-cnpj">CNPJ: ${esc(e.cnpj)}</div><div class="empresa-end">${esc(endFull)}</div></div></div>`
+    : `<div class="sem-timbre"><div class="empresa-nome">${esc(e?.razaoSocial)}</div><div class="empresa-cnpj">CNPJ: ${esc(e?.cnpj)}</div></div>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${isProp?"Proposta Readequada":"Proposta Comercial"}</title>${pdfCSS}</head><body>
     ${timbreHtml}
-    <h1>Proposta Comercial de Preços</h1>
-    <div class="sub">Emitida em ${new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"})} · LicitaFlow v5</div>
-    ${c?`<div class="badge">${c.tipoCertame} nº ${c.numero||"—"} — ${c.orgao||""}</div>`:""}
+    <div class="prop-title"><h1>${isProp?"PROPOSTA READEQUADA FINAL":"PROPOSTA COMERCIAL DE PREÇOS"}</h1></div>
+    ${c?`<div class="badge">${esc(c.tipoCertame)} nº ${esc(c.numero||"—")} — ${esc(c.orgao||"")} ${c.uf?"/ "+c.uf:""}</div>`:""}
     <h2>Empresa Proponente</h2>
     <div class="g2">
-      <div class="box"><div class="lbl">Razão Social</div><div class="val">${e?.razaoSocial||"—"}</div></div>
-      <div class="box"><div class="lbl">CNPJ</div><div class="val">${e?.cnpj||"—"}</div></div>
-      <div class="box"><div class="lbl">Endereço</div><div class="val">${e?.logradouro||""}, ${e?.numero||"s/n"} — ${e?.bairro||""}, ${e?.municipio||""}/${e?.uf||""}</div></div>
-      <div class="box"><div class="lbl">Representante</div><div class="val">${e?.repNome||"—"} · ${e?.repCargo||""}</div></div>
+      <div class="box"><div class="lbl">Razão Social</div><div class="val">${esc(e?.razaoSocial||"—")}</div></div>
+      <div class="box"><div class="lbl">CNPJ</div><div class="val">${esc(e?.cnpj||"—")}</div></div>
+      <div class="box"><div class="lbl">Endereço</div><div class="val">${esc(endFull||"—")}</div></div>
+      <div class="box"><div class="lbl">Representante Legal</div><div class="val">${esc(e?.repNome||"—")} · ${esc(e?.repCargo||"")}</div></div>
     </div>
-    ${c?`<h2>Dados do Certame</h2><div class="g2">
-      <div class="box"><div class="lbl">Modalidade</div><div class="val">${c.tipoCertame||"—"}</div></div>
-      <div class="box"><div class="lbl">Processo Adm.</div><div class="val">${c.processo||"—"}</div></div>
-      <div class="box"><div class="lbl">Órgão</div><div class="val">${c.orgao||"—"} · ${c.uf||""}</div></div>
-      <div class="box"><div class="lbl">Abertura</div><div class="val">${fmtDate(c.dataAbertura)}</div></div>
+    ${c?`<h2>Dados do Processo Licitatório</h2><div class="g2">
+      <div class="box"><div class="lbl">Modalidade</div><div class="val">${esc(c.tipoCertame||"—")}</div></div>
+      <div class="box"><div class="lbl">Processo Adm.</div><div class="val">${esc(c.processo||"—")}</div></div>
+      <div class="box"><div class="lbl">Órgão / UF</div><div class="val">${esc(c.orgao||"—")} / ${esc(c.uf||"")}</div></div>
+      <div class="box"><div class="lbl">Data Abertura</div><div class="val">${fmtDate(c.dataAbertura)}</div></div>
     </div>`:""}
-    <h2>Itens da Proposta</h2>
-    <table><thead><tr><th>#</th><th>Descrição</th><th>Un.</th><th>Qtd.</th><th>R$ Unit.</th><th>Total</th></tr></thead><tbody>
-      ${(itens||[]).map((it,i)=>`<tr><td>${i+1}</td><td>${it.desc||"—"}</td><td>${it.unidade||"UN"}</td><td>${it.qtd}</td><td>${fmt(it.unit)}</td><td>${fmt((parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0))}</td></tr>`).join("")}
+    <h2>Itens da Proposta${isProp?" Readequada":""}</h2>
+    <table><thead><tr><th>#</th><th>Descrição</th><th>Un.</th><th>Qtd.</th><th>R$ Unitário</th><th>Total</th></tr></thead><tbody>
+      ${(itens||[]).map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.desc||"—")}</td><td>${esc(it.unidade||"UN")}</td><td style="text-align:center">${it.qtd}</td><td style="text-align:right">${fmt(it.unit)}</td><td style="text-align:right;font-weight:700">${fmt((parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0))}</td></tr>`).join("")}
     </tbody></table>
     <div class="total">VALOR GLOBAL: ${fmt(total)}</div>
     <div class="g2">
-      <div class="box"><div class="lbl">Validade</div><div class="val">${validade||"60"} dias</div></div>
-      <div class="box"><div class="lbl">Prazo entrega</div><div class="val">${prazoEntrega||"A definir"}</div></div>
+      <div class="box"><div class="lbl">Validade da Proposta</div><div class="val">${esc(validade||"60")} dias</div></div>
+      <div class="box"><div class="lbl">Prazo de Entrega</div><div class="val">${esc(prazoEntrega||"A definir")}</div></div>
     </div>
-    ${obs?`<h2>Obs.</h2><p>${obs}</p>`:""}
-    <div class="sign" style="margin-top:52px"><div class="sign-line"></div><strong>${e?.razaoSocial||""}</strong><br><span>CNPJ: ${e?.cnpj||""} · ${e?.repNome||""} · ${e?.repCargo||""}</span></div>
-    <div class="footer"><span>LicitaFlow v5 © ${new Date().getFullYear()}</span><span>Documento eletrônico</span></div>
+    ${isProp&&(banco||pix)?`<h2>Dados Bancários para Pagamento</h2><div class="g2">
+      ${banco?`<div class="box"><div class="lbl">Banco</div><div class="val">${esc(banco)}</div></div>`:""}
+      ${agencia?`<div class="box"><div class="lbl">Agência</div><div class="val">${esc(agencia)}</div></div>`:""}
+      ${conta?`<div class="box"><div class="lbl">Conta Corrente</div><div class="val">${esc(conta)}</div></div>`:""}
+      ${pix?`<div class="box"><div class="lbl">Chave PIX</div><div class="val">${esc(pix)}</div></div>`:""}
+    </div>`:""}
+    ${obs?`<h2>Observações</h2><p style="font-size:12.5px;line-height:1.8;color:#475569">${esc(obs)}</p>`:""}
+    <div class="sign"><div class="sign-line"></div><div class="sign-name">${esc(e?.repNome||e?.razaoSocial||"")}</div><div class="sign-sub">${esc(e?.repCargo||"")} — CPF: ${esc(e?.repCpf||"—")}</div><div class="sign-sub">${esc(e?.razaoSocial||"")} — CNPJ: ${esc(e?.cnpj||"")}</div></div>
+    <div class="footer">
+      <div class="footer-main"><span>LicitaFlow v7 © ${new Date().getFullYear()} · Documento gerado eletronicamente</span><span>Proposta válida por ${esc(validade||"60")} dias</span></div>
+      <div class="footer-addr">${esc(e?.razaoSocial)} · CNPJ ${esc(e?.cnpj)} · ${esc(endFull)} ${e?.telefone?"· Tel: "+esc(e.telefone):""} ${e?.email?"· "+esc(e.email):""}</div>
+    </div>
   </body></html>`;
   openPDF(html);
 };
@@ -448,7 +480,7 @@ const gerarPDFProposta = (dados) => {
 // ══════════════════════════════════════════════════════════════════════
 // EMPTY STATES
 // ══════════════════════════════════════════════════════════════════════
-const EMP0 = {razaoSocial:"",nomeFantasia:"",cnpj:"",ie:"",im:"",porte:"ME",logradouro:"",numero:"",complemento:"",bairro:"",municipio:"",uf:"PE",cep:"",telefone:"",email:"",site:"",repNome:"",repCargo:"",repCpf:"",repEmail:"",repTelefone:"",timbre:""};
+const EMP0 = {razaoSocial:"",nomeFantasia:"",cnpj:"",ie:"",im:"",porte:"ME",logradouro:"",numero:"",complemento:"",bairro:"",municipio:"",uf:"PE",cep:"",telefone:"",email:"",site:"",repNome:"",repCargo:"",repCpf:"",repEmail:"",repTelefone:"",timbre:"",banco:"",agencia:"",conta:"",tipoConta:"Corrente",pix:""};
 const CERT0 = {titulo:"",tipoCertame:"Pregão Eletrônico",numero:"",processo:"",orgao:"",uf:"PE",objeto:"",valor:"",dataPublicacao:"",dataAbertura:"",dataEncerramento:"",editalUrl:"",fonte:"Manual",status:"Aberto",obs:"",monitorando:true,resultado:"Em andamento",valorProposta:"",checklist:[],impugnacoes:[],historico:[]};
 const DOC0 = {nome:"",tipo:"Certidão",validade:"",arquivo:""};
 const PROP0 = {titulo:"",certameId:"",itens:[{desc:"",unidade:"UN",qtd:1,unit:""}],validade:"60",prazoEntrega:"",obs:""};
@@ -733,7 +765,7 @@ export default function App() {
     try{
       const hoje=new Date();
       const ini=new Date(hoje); ini.setDate(ini.getDate()-30); // últimos 30 dias
-      const fim=new Date(hoje); fim.setDate(fim.getDate()+180); // próximos 180 dias
+      const fim=new Date(hoje); fim.setDate(fim.getDate()+365); // próximos 12 meses
       const di=`${ini.getFullYear()}${pad2(ini.getMonth()+1)}${pad2(ini.getDate())}`;
       const df=`${fim.getFullYear()}${pad2(fim.getMonth()+1)}${pad2(fim.getDate())}`;
       // Tenta primeiro endpoint v1/contratacoes
@@ -756,7 +788,7 @@ export default function App() {
               dataAbertura:c.dataAberturaProposta||c.dataAberturaPropostaInicio||c.dataAbertura,
               dataPublicacao:c.dataPublicacaoPncp||c.dataInclusao||c.dataPublicacao,
               fonte:"PNCP",
-            }));
+            })).sort((a,b)=>new Date(b.dataPublicacao||b.dataAbertura||0)-new Date(a.dataPublicacao||a.dataAbertura||0));
             ok=true;
           }
         }
@@ -1060,8 +1092,12 @@ export default function App() {
           <button
             title="Sair do sistema"
             onClick={()=>{sessionStorage.removeItem("lf_auth");window.location.reload();}}
-            style={{background:"none",border:"1.5px solid var(--border)",borderRadius:8,padding:"5px 8px",fontSize:12,color:"var(--txt-sub)",cursor:"pointer",fontWeight:700}}>
-            ⏻
+            style={{background:"none",border:"1.5px solid var(--border)",borderRadius:8,padding:"6px 8px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--txt-sub)"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
           </button>
         </div>
       </header>
@@ -1676,71 +1712,118 @@ export default function App() {
         {/* PROPOSTAS */}
         {tab==="propostas"&&(
           <div style={RS.pg}>
-            <PgHdr title="📝 Propostas"/>
-            <div style={RS.card}>
-              <div style={{fontSize:13,fontWeight:800,marginBottom:12}}>Nova Proposta</div>
-              <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                <FG l="Título *"><FI value={formProp.titulo} onChange={e=>setFormProp(p=>({...p,titulo:e.target.value}))} placeholder="Ex: Proposta PE 001/2025"/></FG>
-                <FG l="Vincular Certame">
-                  <select style={RS.fi} value={formProp.certameId} onChange={e=>setFormProp(p=>({...p,certameId:e.target.value}))}>
-                    <option value="">— Nenhum —</option>
-                    {certames.map(c=><option key={c.id} value={c.id}>{c.tipoCertame} · {(c.titulo||c.objeto||"").slice(0,50)}</option>)}
-                  </select>
-                </FG>
-                <label style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase"}}>Itens</label>
-                <div style={{overflowX:"auto"}}>
-                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:400}}>
-                    <thead><tr>{["Descrição","Un","Qtd","R$ Unit","Total",""].map(h=><th key={h} style={{background:"#f1f5f9",padding:"6px 6px",textAlign:"left",fontSize:10,fontWeight:700,color:"#64748b",whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
-                    <tbody>{(formProp.itens||[]).map((it,i)=>(
-                      <tr key={i}>
-                        <td style={{padding:"4px 3px",borderBottom:"1px solid #f1f5f9"}}><input style={{...RS.fi,fontSize:12,minWidth:100}} value={it.desc} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,desc:e.target.value}:x)}))} placeholder="Item"/></td>
-                        <td style={{padding:"4px 3px",borderBottom:"1px solid #f1f5f9"}}><input style={{...RS.fi,width:34,fontSize:12}} value={it.unidade} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,unidade:e.target.value}:x)}))}/></td>
-                        <td style={{padding:"4px 3px",borderBottom:"1px solid #f1f5f9"}}><input style={{...RS.fi,width:42,fontSize:12}} type="number" value={it.qtd} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,qtd:e.target.value}:x)}))}/></td>
-                        <td style={{padding:"4px 3px",borderBottom:"1px solid #f1f5f9"}}><input style={{...RS.fi,width:80,fontSize:12}} type="number" value={it.unit} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,unit:e.target.value}:x)}))}/></td>
-                        <td style={{padding:"4px 3px",fontWeight:700,color:"#1d4ed8",fontSize:12,borderBottom:"1px solid #f1f5f9",whiteSpace:"nowrap"}}>{fmt((parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0))}</td>
-                        <td style={{padding:"4px 3px",borderBottom:"1px solid #f1f5f9"}}><button style={{background:"none",border:"none",color:"#dc2626",cursor:"pointer",fontSize:16}} onClick={()=>setFormProp(p=>({...p,itens:p.itens.filter((_,j)=>j!==i)}))}>×</button></td>
-                      </tr>
-                    ))}</tbody>
-                  </table>
+            <PgHdr title="📝 Propostas" sub="Normal e Readequada Final"/>
+            {/* Abas tipo proposta */}
+            <div style={{display:"flex",gap:6,marginBottom:14}}>
+              {[{id:"normal",lb:"📝 Proposta Normal",desc:"Para participação em certames"},{id:"readequada",lb:"🏆 Proposta Readequada Final",desc:"Para certames vencidos — com dados bancários"}].map(t=>(
+                <button key={t.id} onClick={()=>setFormProp(p=>({...p,tipo:t.id||"normal"}))}
+                  style={{padding:"8px 16px",borderRadius:10,border:`1.5px solid ${(formProp.tipo||"normal")===t.id?"#1d4ed8":"var(--border)"}`,background:(formProp.tipo||"normal")===t.id?"#eff6ff":"var(--bg-card)",color:(formProp.tipo||"normal")===t.id?"#1d4ed8":"var(--txt-sub)",fontWeight:700,fontSize:12,cursor:"pointer",flex:1,textAlign:"left"}}>
+                  <div>{t.lb}</div>
+                  <div style={{fontSize:10,fontWeight:400,marginTop:2,color:(formProp.tipo||"normal")===t.id?"#3b82f6":"var(--txt-sub)"}}>{t.desc}</div>
+                </button>
+              ))}
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 360px",gap:14,alignItems:"start"}}>
+              {/* Coluna esquerda: formulário */}
+              <div style={RS.card}>
+                <div style={{fontSize:13,fontWeight:800,marginBottom:14,color:(formProp.tipo||"normal")==="readequada"?"#16a34a":"#1d4ed8"}}>
+                  {(formProp.tipo||"normal")==="readequada"?"🏆 Nova Proposta Readequada Final":"📝 Nova Proposta Comercial"}
                 </div>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <button style={RS.btnOut} onClick={()=>setFormProp(p=>({...p,itens:[...p.itens,{desc:"",unidade:"UN",qtd:1,unit:""}]}))}>+ Item</button>
-                  <div style={{fontWeight:800,color:"#1d4ed8",fontSize:14}}>TOTAL: {fmt(totalProp)}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                  <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                    <FG l="Título *" style={{flex:2,minWidth:180}}><FI value={formProp.titulo} onChange={e=>setFormProp(p=>({...p,titulo:e.target.value}))} placeholder="Ex: Proposta PE 001/2025"/></FG>
+                    <FG l="Vincular Certame" style={{flex:2,minWidth:180}}>
+                      <select style={RS.fi} value={formProp.certameId} onChange={e=>setFormProp(p=>({...p,certameId:e.target.value}))}>
+                        <option value="">— Nenhum —</option>
+                        {certames.map(c=><option key={c.id} value={c.id}>{c.tipoCertame} · {(c.titulo||c.objeto||"").slice(0,50)}</option>)}
+                      </select>
+                    </FG>
+                  </div>
+                  {/* Tabela de itens melhorada */}
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:"var(--txt-sub)",textTransform:"uppercase",letterSpacing:".4px",marginBottom:8}}>Itens da Proposta</div>
+                    <div style={{border:"1.5px solid var(--border)",borderRadius:10,overflow:"hidden"}}>
+                      {/* Cabeçalho */}
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 70px 80px 130px 120px 36px",background:"var(--bg-input)",padding:"8px 12px",gap:8,borderBottom:"1.5px solid var(--border)"}}>
+                        {["Descrição do Item","Unidade","Quantidade","R$ Unitário","Total",""].map(h=>(
+                          <div key={h} style={{fontSize:10,fontWeight:700,color:"var(--txt-sub)",textTransform:"uppercase",letterSpacing:".3px"}}>{h}</div>
+                        ))}
+                      </div>
+                      {/* Linhas */}
+                      {(formProp.itens||[]).map((it,i)=>(
+                        <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 70px 80px 130px 120px 36px",padding:"8px 12px",gap:8,borderBottom:"1px solid var(--border-light)",alignItems:"center",background:i%2===0?"var(--bg-card)":"var(--bg-input)"}}>
+                          <input style={{...RS.fi,fontSize:13,padding:"8px 10px"}} value={it.desc||""} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,desc:e.target.value}:x)}))} placeholder={`Item ${i+1}...`}/>
+                          <input style={{...RS.fi,fontSize:13,padding:"8px 8px",textAlign:"center"}} value={it.unidade||"UN"} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,unidade:e.target.value}:x)}))}/>
+                          <input style={{...RS.fi,fontSize:13,padding:"8px 8px",textAlign:"center"}} type="number" min="1" value={it.qtd||1} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,qtd:e.target.value}:x)}))}/>
+                          <input style={{...RS.fi,fontSize:13,padding:"8px 10px",textAlign:"right"}} type="number" step="0.01" value={it.unit||""} onChange={e=>setFormProp(p=>({...p,itens:p.itens.map((x,j)=>j===i?{...x,unit:e.target.value}:x)}))} placeholder="0,00"/>
+                          <div style={{fontSize:14,fontWeight:800,color:"#1d4ed8",textAlign:"right",paddingRight:4}}>{fmt((parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0))}</div>
+                          <button style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,color:"#dc2626",cursor:"pointer",fontSize:14,padding:"4px 6px",lineHeight:1}} onClick={()=>setFormProp(p=>({...p,itens:p.itens.filter((_,j)=>j!==i)}))}>×</button>
+                        </div>
+                      ))}
+                      {/* Total */}
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"var(--bg-input)",borderTop:"1.5px solid var(--border)"}}>
+                        <button style={{...RS.btnOut,fontSize:12}} onClick={()=>setFormProp(p=>({...p,itens:[...p.itens,{desc:"",unidade:"UN",qtd:1,unit:""}]}))}>+ Adicionar Item</button>
+                        <div style={{fontWeight:900,color:"#1d4ed8",fontSize:16}}>TOTAL: {fmt(totalProp)}</div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Validade e prazo */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 2fr",gap:10}}>
+                    <FG l="Validade (dias)"><FI value={formProp.validade||"60"} onChange={e=>setFormProp(p=>({...p,validade:e.target.value}))} placeholder="60"/></FG>
+                    <FG l="Prazo de Entrega"><FI value={formProp.prazoEntrega||""} onChange={e=>setFormProp(p=>({...p,prazoEntrega:e.target.value}))} placeholder="Ex: 30 dias úteis após empenho"/></FG>
+                  </div>
+                  {/* Dados bancários — só na readequada */}
+                  {(formProp.tipo||"normal")==="readequada"&&(
+                    <div style={{background:"#f0fdf4",border:"1.5px solid #bbf7d0",borderRadius:10,padding:"12px 14px"}}>
+                      <div style={{fontSize:11,fontWeight:800,color:"#16a34a",textTransform:"uppercase",marginBottom:10,letterSpacing:".4px"}}>🏦 Dados Bancários para Pagamento</div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                        <FG l="Banco"><FI value={formProp.banco||empresa?.banco||""} onChange={e=>setFormProp(p=>({...p,banco:e.target.value}))} placeholder="Ex: Banco do Brasil / Caixa..."/></FG>
+                        <FG l="Tipo de Conta">
+                          <select style={RS.fi} value={formProp.tipoConta||"Corrente"} onChange={e=>setFormProp(p=>({...p,tipoConta:e.target.value}))}>
+                            {["Corrente","Poupança","Pagamento"].map(o=><option key={o}>{o}</option>)}
+                          </select>
+                        </FG>
+                        <FG l="Agência"><FI value={formProp.agencia||empresa?.agencia||""} onChange={e=>setFormProp(p=>({...p,agencia:e.target.value}))} placeholder="0000-0"/></FG>
+                        <FG l="Conta"><FI value={formProp.conta||empresa?.conta||""} onChange={e=>setFormProp(p=>({...p,conta:e.target.value}))} placeholder="00000-0"/></FG>
+                        <FG l="Chave PIX" style={{gridColumn:"1/-1"}}><FI value={formProp.pix||empresa?.pix||""} onChange={e=>setFormProp(p=>({...p,pix:e.target.value}))} placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"/></FG>
+                      </div>
+                    </div>
+                  )}
+                  <FG l="Observações"><textarea style={{...RS.fi,minHeight:65,resize:"vertical"}} value={formProp.obs||""} onChange={e=>setFormProp(p=>({...p,obs:e.target.value}))} placeholder="Condições especiais, descontos, garantias..."/></FG>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    <button style={{...RS.btnPrimary,padding:"11px"}} onClick={saveProp}>💾 Salvar Proposta</button>
+                    <button style={{...RS.btnPrimary,background:"#16a34a",padding:"11px"}} onClick={()=>{const c=certames.find(x=>x.id===formProp.certameId);gerarPDFProposta({...formProp,empresa,certame:c,tipo:formProp.tipo||"normal"});showToast("📄 PDF gerado!");}}>📄 Exportar PDF</button>
+                  </div>
                 </div>
-                <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                  <FG l="Validade (dias)" style={{flex:1}}><FI value={formProp.validade} onChange={e=>setFormProp(p=>({...p,validade:e.target.value}))}/></FG>
-                  <FG l="Prazo Entrega" style={{flex:2}}><FI value={formProp.prazoEntrega} onChange={e=>setFormProp(p=>({...p,prazoEntrega:e.target.value}))} placeholder="Ex: 30 dias após empenho"/></FG>
-                </div>
-                <FG l="Observações"><textarea style={{...RS.fi,minHeight:60,resize:"vertical"}} value={formProp.obs} onChange={e=>setFormProp(p=>({...p,obs:e.target.value}))} placeholder="Condições especiais..."/></FG>
-                <div style={{display:"flex",gap:8}}>
-                  <button style={{...RS.btnPrimary,flex:1}} onClick={saveProp}>💾 Salvar</button>
-                  <button style={{...RS.btnPrimary,flex:1,background:"#16a34a"}} onClick={()=>{const c=certames.find(x=>x.id===formProp.certameId);gerarPDFProposta({...formProp,empresa,certame:c});showToast("📄 PDF!");}}>📄 PDF</button>
+              </div>
+              {/* Coluna direita: propostas salvas */}
+              <div>
+                <div style={RS.card}>
+                  <div style={{fontSize:13,fontWeight:800,marginBottom:12}}>Propostas Salvas</div>
+                  {propostas.length===0&&<div style={{textAlign:"center",padding:"20px",color:"var(--txt-sub)",fontSize:13}}>Nenhuma proposta salva</div>}
+                  {propostas.map(p=>{
+                    const c=certames.find(x=>x.id===p.certameId);
+                    const tot=(p.itens||[]).reduce((a,it)=>a+(parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0),0);
+                    const isRead=(p.tipo||"normal")==="readequada";
+                    return(
+                      <div key={p.id} style={{padding:"12px 0",borderBottom:"1px solid var(--border-light)"}}>
+                        <div style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:6}}>
+                          <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:5,background:isRead?"#f0fdf4":"#eff6ff",color:isRead?"#16a34a":"#1d4ed8",flexShrink:0,marginTop:1}}>{isRead?"🏆 READEQUADA":"📝 NORMAL"}</span>
+                        </div>
+                        <div style={{fontSize:13,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.titulo}</div>
+                        {c&&<div style={{fontSize:11,color:"var(--txt-sub)",marginTop:1}}>{c.tipoCertame} · {c.orgao}</div>}
+                        <div style={{fontSize:15,fontWeight:900,color:"#1d4ed8",marginTop:2}}>{fmt(tot)}</div>
+                        <div style={{display:"flex",gap:6,marginTop:8}}>
+                          <button style={{...RS.btnSec,flex:1,fontSize:11}} onClick={()=>setFormProp({...p})}>✏ Editar</button>
+                          <button style={{...RS.btnPrimary,flex:1,fontSize:11,background:"#16a34a",padding:"6px"}} onClick={()=>{const c=certames.find(x=>x.id===p.certameId);gerarPDFProposta({...p,empresa,certame:c,tipo:p.tipo||"normal"});}}>📄 PDF</button>
+                          <button style={{background:"none",border:"1px solid #fecaca",borderRadius:8,color:"#dc2626",fontSize:12,cursor:"pointer",padding:"6px 8px"}} onClick={()=>delProp(p.id)}>🗑</button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
-            {propostas.length>0&&(
-              <div style={RS.card}>
-                <div style={{fontSize:12,fontWeight:800,marginBottom:10}}>Propostas Salvas</div>
-                {propostas.map(p=>{
-                  const c=certames.find(x=>x.id===p.certameId);
-                  const tot=(p.itens||[]).reduce((a,it)=>a+(parseFloat(it.qtd)||0)*(parseFloat(it.unit)||0),0);
-                  return(
-                    <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid #f8fafc",flexWrap:"wrap"}}>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:12,fontWeight:700,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.titulo}</div>
-                        {c&&<div style={{fontSize:10,color:"#94a3b8"}}>{c.tipoCertame} · {c.orgao}</div>}
-                        <div style={{fontSize:13,fontWeight:800,color:"#1d4ed8"}}>{fmt(tot)}</div>
-                      </div>
-                      <div style={{display:"flex",gap:6,flexShrink:0}}>
-                        <button style={RS.btnSec} onClick={()=>setFormProp(p)}>✏</button>
-                        <button style={RS.btnSec} onClick={()=>{const c=certames.find(x=>x.id===p.certameId);gerarPDFProposta({...p,empresa,certame:c});}}>📄</button>
-                        <button style={{background:"none",border:"none",color:"#dc2626",fontSize:14,cursor:"pointer",padding:4}} onClick={()=>delProp(p.id)}>🗑</button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
         )}
 
@@ -1853,15 +1936,20 @@ export default function App() {
             {adminMode&&(
               <div style={RS.card}>
                 <div style={{fontSize:13,fontWeight:800,marginBottom:12}}>🏢 Gerenciar Empresas <span style={{background:"#16a34a",color:"#fff",borderRadius:6,padding:"2px 8px",fontSize:10,marginLeft:6}}>ADMIN</span></div>
+                {empresasList.length===0&&<div style={{textAlign:"center",padding:"16px",color:"var(--txt-sub)",fontSize:13}}>Nenhuma empresa cadastrada</div>}
                 {empresasList.map(e=>(
-                  <div key={e.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--border-light)"}}>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:12,fontWeight:700}}>{e.nomeFantasia||e.razaoSocial}</div>
-                      <div style={{fontSize:10,color:"#64748b"}}>{e.cnpj}</div>
+                  <div key={e.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px",borderRadius:10,marginBottom:8,background:e.id===empresaAtualId?"var(--blue-lt)":"var(--bg-input)",border:`1.5px solid ${e.id===empresaAtualId?"#bfdbfe":"var(--border)"}`}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nomeFantasia||e.razaoSocial}</div>
+                      <div style={{fontSize:11,color:"var(--txt-sub)",marginTop:1}}>CNPJ: {e.cnpj}</div>
                     </div>
-                    {e.id===empresaAtualId&&<span style={{...RS.pill,background:"#f0fdf4",color:"#16a34a"}}>Ativa</span>}
-                    <button style={{...RS.btnSec,fontSize:11}} onClick={()=>trocarEmpresa(e.id)}>Acessar</button>
-                    <button style={{background:"none",border:"none",color:"#dc2626",cursor:"pointer",fontSize:14}} onClick={()=>removerEmpresa(e.id)}>🗑</button>
+                    {e.id===empresaAtualId&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:6,background:"#1d4ed8",color:"#fff",flexShrink:0}}>Ativa</span>}
+                    {e.id!==empresaAtualId&&<button style={{...RS.btnSec,fontSize:11,flexShrink:0}} onClick={()=>trocarEmpresa(e.id)}>Acessar</button>}
+                    <button title="Excluir empresa e todos os dados"
+                      style={{background:"#fef2f2",border:"1.5px solid #fecaca",borderRadius:8,color:"#dc2626",cursor:"pointer",fontSize:12,padding:"6px 10px",display:"flex",alignItems:"center",gap:4,flexShrink:0,fontWeight:700}}
+                      onClick={()=>removerEmpresa(e.id)}>
+                      🗑 Excluir
+                    </button>
                   </div>
                 ))}
                 <button style={{...RS.btnPrimary,width:"100%",marginTop:12}} onClick={criarNovaEmpresa}>+ Adicionar Nova Empresa</button>
@@ -1925,7 +2013,7 @@ function EmpresaForm({form,setForm}){
       </div>
       <SL>Contato</SL>
       <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-        <FG l="Telefone" style={{flex:1,minWidth:140}}><FI value={form.telefone} onChange={e=>f("telefone",maskPhone(e.target.value))}/></FG>
+        <FG l="Telefone" style={{flex:1,minWidth:140}}><FI value={form.telefone} onChange={e=>f("telefone",maskFone(e.target.value))}/></FG>
         <FG l="E-mail" style={{flex:2,minWidth:160}}><FI value={form.email} onChange={e=>f("email",e.target.value)}/></FG>
       </div>
       <SL>Representante Legal</SL>
