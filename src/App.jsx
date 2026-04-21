@@ -393,9 +393,9 @@ const pdfCSS = `<style>
   td{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
   tr:nth-child(even) td{background:#f8fafc}
   .total{font-size:18px;font-weight:900;color:#1d4ed8;text-align:right;margin:16px 0;padding:10px 0;border-top:2px solid #e2e8f0}
-  .footer{margin-top:48px;padding:14px 0 0;border-top:1.5px solid #e2e8f0;font-size:10.5px;color:#94a3b8}
-  .footer-main{display:flex;justify-content:space-between;margin-bottom:4px}
-  .footer-addr{text-align:center;font-size:10px;color:#b0bec5;margin-top:4px}
+  .footer{margin-top:48px;padding:16px 0 0;border-top:2px solid #e2e8f0;font-size:12px;color:#64748b}
+  .footer-main{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;font-weight:600}
+  .footer-addr{text-align:center;font-size:11.5px;color:#475569;margin-top:6px;font-weight:500;line-height:1.6}
   .dec-body{background:#f8fafc;border-radius:10px;padding:28px 32px;margin-top:16px;line-height:2.1;border:1px solid #e2e8f0;white-space:pre-wrap;font-size:13px}
   .sign{margin-top:60px;text-align:center}
   .sign-line{width:300px;border-top:1.5px solid #1e293b;margin:0 auto 8px}
@@ -759,70 +759,57 @@ export default function App() {
     setAiLoading(false);
   };
 
-  // ── PNCP (endpoint atualizado 2025) ──
+  // ── PNCP — publicacao 2026, mais recente primeiro ──
   const fetchPNCP = useCallback(async(termo="",pag=1)=>{
     setPncpLoading(true); setPncpError(null);
     try{
       const hoje=new Date();
-      const ini=new Date(hoje); ini.setDate(ini.getDate()-30); // últimos 30 dias
-      const fim=new Date(hoje); fim.setDate(fim.getDate()+365); // próximos 12 meses
+      // Janela: publicados nos últimos 7 dias até abertura em 6 meses
+      const ini=new Date(hoje); ini.setDate(ini.getDate()-7);
+      const fim=new Date(hoje); fim.setDate(fim.getDate()+180);
       const di=`${ini.getFullYear()}${pad2(ini.getMonth()+1)}${pad2(ini.getDate())}`;
       const df=`${fim.getFullYear()}${pad2(fim.getMonth()+1)}${pad2(fim.getDate())}`;
-      // Tenta primeiro endpoint v1/contratacoes
-      let items=[];
-      let ok=false;
-      // Endpoint 1: contratacoes/proposta
+
+      const mapItem=c=>({
+        id:c.numeroControlePNCP||uid(),
+        ncp:c.numeroControlePNCP,
+        linkEdital:c.numeroControlePNCP?`https://pncp.gov.br/app/editais/${(c.numeroControlePNCP||"").replace(/\//g,"-")}`:null,
+        modalidade:MODALIDADES_PNCP[c.modalidadeId||c.codigoModalidadeContratacao]||"Licitação",
+        objeto:c.objetoCompra||c.objetoContratacao||c.objeto||"Sem descrição",
+        orgao:c.unidadeOrgao?.nomeUnidade||c.orgaoEntidade?.razaoSocial||"Órgão Público",
+        uf:c.unidadeOrgao?.ufSigla||c.ufSigla||"BR",
+        municipio:c.unidadeOrgao?.municipioNome||"",
+        valor:c.valorTotalEstimado||c.valorTotalHomologado||c.valor||0,
+        dataAbertura:c.dataAberturaProposta||c.dataAberturaPropostaInicio||c.dataAbertura,
+        dataEncerramento:c.dataEncerramentoProposta||null,
+        dataPublicacao:c.dataPublicacaoPncp||c.dataInclusao||c.dataPublicacao,
+        situacao:c.situacaoCompraId===1?"Recebendo Propostas":c.situacaoCompraId===2?"Em Julgamento":c.situacaoCompraId===3?"Encerrado":"Em andamento",
+        fonte:"PNCP",
+      });
+
+      let items=[]; let ok=false;
+
+      // Endpoint 1: publicacao (principal — retorna por data de publicação)
       try{
-        const r1=await fetch(`${PNCP_BASE}/contratacoes/proposta?dataInicial=${di}&dataFinal=${df}&pagina=${pag}&tamanhoPagina=12`);
-        if(r1.ok){
-          const j=await r1.json();
-          const arr=j.data||j||[];
-          if(Array.isArray(arr)&&arr.length>0){
-            items=arr.map(c=>({
-              id:c.numeroControlePNCP||uid(), ncp:c.numeroControlePNCP,
-              modalidade:MODALIDADES_PNCP[c.modalidadeId||c.codigoModalidadeContratacao]||"Licitação",
-              objeto:c.objetoCompra||c.objetoContratacao||c.objeto||"Sem descrição",
-              orgao:c.unidadeOrgao?.nomeUnidade||c.orgaoEntidade?.razaoSocial||"Órgão Público",
-              uf:c.unidadeOrgao?.ufSigla||c.ufSigla||"BR",
-              valor:c.valorTotalEstimado||c.valorTotalHomologado||c.valor||0,
-              dataAbertura:c.dataAberturaProposta||c.dataAberturaPropostaInicio||c.dataAbertura,
-              dataPublicacao:c.dataPublicacaoPncp||c.dataInclusao||c.dataPublicacao,
-              fonte:"PNCP",
-            })).sort((a,b)=>new Date(b.dataPublicacao||b.dataAbertura||0)-new Date(a.dataPublicacao||a.dataAbertura||0));
-            ok=true;
-          }
-        }
-      }catch(e){console.warn("Endpoint 1 falhou:",e);}
-      // Endpoint 2: contratacoes/publicacao (fallback)
+        const r=await fetch(`${PNCP_BASE}/contratacoes/publicacao?dataInicial=${di}&dataFinal=${df}&pagina=${pag}&tamanhoPagina=12`);
+        if(r.ok){ const j=await r.json(); const arr=Array.isArray(j)?j:(j.data||[]); if(arr.length>0){ items=arr.map(mapItem); ok=true; }}
+      }catch(e){console.warn("publicacao falhou:",e);}
+
+      // Endpoint 2: proposta (fallback)
       if(!ok){
         try{
-          const r2=await fetch(`${PNCP_BASE}/contratacoes/publicacao?dataInicial=${di}&dataFinal=${df}&pagina=${pag}&tamanhoPagina=12`);
-          if(r2.ok){
-            const j2=await r2.json();
-            const arr2=j2.data||j2||[];
-            if(Array.isArray(arr2)&&arr2.length>0){
-              items=arr2.map(c=>({
-                id:c.numeroControlePNCP||uid(), ncp:c.numeroControlePNCP,
-                modalidade:MODALIDADES_PNCP[c.modalidadeId||c.codigoModalidadeContratacao]||"Licitação",
-                objeto:c.objetoCompra||c.objetoContratacao||c.objeto||"Sem descrição",
-                orgao:c.unidadeOrgao?.nomeUnidade||c.orgaoEntidade?.razaoSocial||"Órgão Público",
-                uf:c.unidadeOrgao?.ufSigla||c.ufSigla||"BR",
-                valor:c.valorTotalEstimado||c.valorTotalHomologado||c.valor||0,
-                dataAbertura:c.dataAberturaProposta||c.dataAberturaPropostaInicio||c.dataAbertura,
-                dataPublicacao:c.dataPublicacaoPncp||c.dataInclusao||c.dataPublicacao,
-                fonte:"PNCP",
-              }));
-              ok=true;
-            }
-          }
-        }catch(e){console.warn("Endpoint 2 falhou:",e);}
+          const r2=await fetch(`${PNCP_BASE}/contratacoes/proposta?dataInicial=${di}&dataFinal=${df}&pagina=${pag}&tamanhoPagina=12`);
+          if(r2.ok){ const j2=await r2.json(); const arr2=Array.isArray(j2)?j2:(j2.data||[]); if(arr2.length>0){ items=arr2.map(mapItem); ok=true; }}
+        }catch(e){console.warn("proposta falhou:",e);}
       }
-      if(!ok) throw new Error("Sem dados");
-      setPncpItems(termo?items.filter(i=>(i.objeto+i.orgao).toLowerCase().includes(termo.toLowerCase())):items);
-    }catch{setPncpError("Não foi possível carregar licitações do PNCP. Verifique sua conexão e tente novamente."); setPncpItems([]);}
+
+      if(!ok) throw new Error("Sem dados PNCP");
+      items.sort((a,b)=>new Date(b.dataPublicacao||b.dataAbertura||0)-new Date(a.dataPublicacao||a.dataAbertura||0));
+      if(termo) items=items.filter(i=>(i.objeto+i.orgao+i.municipio).toLowerCase().includes(termo.toLowerCase()));
+      setPncpItems(items);
+    }catch(err){setPncpError("Não foi possível carregar do PNCP. Tente novamente."); setPncpItems([]);}
     setPncpLoading(false);
   },[]);
-
   useEffect(()=>{ if(tab==="fontes") fetchPNCP(); },[tab]);
 
   // ── NOTIFS ──
@@ -921,13 +908,14 @@ export default function App() {
 
   // ══ ONBOARDING ══
   if(!loading&&!empresa) return(
-    <div style={RS.root} className="app-layout">
+    <div className="app-root" style={{background:"var(--bg-app)",color:"var(--txt)",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
       <style>{CSS}</style>
+      <div id="app-main">
       <div style={RS.onboard}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontSize:52,color:"#1d4ed8"}}>⚖</div>
-          <h1 style={{fontSize:26,fontWeight:900,color:"#0f172a",letterSpacing:"-1px"}}>LicitaFlow v5</h1>
-          <p style={{fontSize:14,color:"#64748b",marginTop:4}}>Plataforma completa de gestão de licitações</p>
+          <h1 style={{fontSize:26,fontWeight:900,color:"#0f172a",letterSpacing:"-1px"}}>LicitaFlow v7</h1>
+          <p style={{fontSize:14,color:"#64748b",marginTop:4}}>Plataforma de Gestão Inteligente de Licitações</p>
         </div>
         <div style={RS.card}>
           <EmpresaForm form={formEmp} setForm={setFormEmp}/>
@@ -991,10 +979,11 @@ export default function App() {
   return(
     <div style={RS.root}>
       <style>{CSS}</style>
+      <div id="app-main">
       {toast && <div style={{...RS.toast,background:toast.type==="error"?"#dc2626":"#16a34a"}}>{toast.msg}</div>}
 
       {/* ── SIDEBAR ── */}
-      <aside id="sidebar" style={{...RS.sidebar,transform:sidebarOpen?"translateX(0)":"translateX(-260px)"}}>
+      <aside id="sidebar" style={{...RS.sidebar,transform:sidebarOpen?"translateX(0)":"translateX(-248px)"}}>
         <div style={RS.sbLogo} onClick={()=>setSidebarOpen(false)}>
           <span style={{fontSize:24,color:"#60a5fa"}}>⚖</span>
           <div><div style={{fontSize:15,fontWeight:800,color:"#f1f5f9"}}>LicitaFlow v7</div><div style={{fontSize:10,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{empresa?.nomeFantasia||empresa?.razaoSocial||"Nenhuma empresa"}</div></div>
@@ -1153,7 +1142,7 @@ export default function App() {
       )}
 
       {/* ══ MAIN ══ */}
-      <main id="main-area" style={{...RS.main,flex:1}} onClick={()=>showNotifs&&setShowNotifs(false)}>
+      <main id="main-content" style={RS.main} onClick={()=>showNotifs&&setShowNotifs(false)}>
 
         {/* DASHBOARD */}
         {tab==="dashboard"&&(
@@ -1239,7 +1228,7 @@ export default function App() {
         {/* PNCP */}
         {tab==="fontes"&&!pncpSelected&&(
           <div style={RS.pg}>
-            <PgHdr title="🌐 PNCP ao Vivo" sub="API pública · Próximos 90 dias">
+            <PgHdr title="🌐 PNCP ao Vivo" sub="Portal Nacional de Contratações Públicas — publicações recentes">
               <button style={RS.refreshBtn} onClick={()=>fetchPNCP(pncpSearch,1)} disabled={pncpLoading}>{pncpLoading?"…":"↻"}</button>
             </PgHdr>
             <div style={RS.card}>
@@ -1252,26 +1241,32 @@ export default function App() {
             {pncpError&&<div style={{textAlign:"center",padding:"40px 20px"}}><div style={{fontSize:28,marginBottom:8}}>⚠️</div><div style={{fontWeight:700,marginBottom:12}}>{pncpError}</div><button style={RS.btnPrimary} onClick={()=>fetchPNCP()}>Tentar novamente</button></div>}
             {!pncpLoading&&!pncpError&&<>
               <div style={{fontSize:12,color:"#94a3b8",marginBottom:10,fontWeight:600}}>{pncpItems.length} resultados</div>
-              {pncpItems.map(l=>{
+              {pncpItems.map((l,idx)=>{
                 const d=diasAte(l.dataAbertura);
+                const importar=()=>{setFormCert({...CERT0,titulo:(l.objeto||"").slice(0,80),tipoCertame:l.modalidade||"Pregão Eletrônico",numero:l.ncp||"",orgao:l.orgao||"",uf:l.uf||"",objeto:l.objeto||"",valor:l.valor||"",dataAbertura:l.dataAbertura||"",dataPublicacao:l.dataPublicacao||"",fonte:"PNCP",status:"Aberto",monitorando:true});setModalType("addCertame");showToast("📥 Importado!");};
                 return(
-                  <div key={l.id} style={RS.licCard} className="hov">
+                  <div key={l.id||idx} style={{...RS.licCard,borderLeft:`3px solid ${l.situacao==="Recebendo Propostas"?"#16a34a":"#e2e8f0"}`}} className="hov">
                     <div style={{display:"flex",gap:10,marginBottom:10}}>
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:10,color:"#94a3b8",fontWeight:700,marginBottom:3}}>{l.modalidade}</div>
+                        <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:3,flexWrap:"wrap"}}>
+                          <span style={{fontSize:10,color:"#94a3b8",fontWeight:700,textTransform:"uppercase"}}>{l.modalidade}</span>
+                          {l.situacao&&<span style={{fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:5,background:l.situacao==="Recebendo Propostas"?"#f0fdf4":"#f8fafc",color:l.situacao==="Recebendo Propostas"?"#16a34a":"#64748b"}}>{l.situacao}</span>}
+                          {l.dataPublicacao&&<span style={{fontSize:9,color:"#94a3b8"}}>Pub: {fmtDate(l.dataPublicacao)}</span>}
+                        </div>
                         <div style={{fontSize:13,fontWeight:700,color:"#1e293b",lineHeight:1.4,marginBottom:4}}>{(l.objeto||"").slice(0,90)}{l.objeto?.length>90?"...":""}</div>
-                        <div style={{fontSize:11,color:"#64748b"}}>🏛 {l.orgao} — {l.uf}</div>
+                        <div style={{fontSize:11,color:"#64748b"}}>🏛 {l.orgao} {l.municipio?`— ${l.municipio}/`:""}{l.uf}</div>
                       </div>
                       <div style={{flexShrink:0,textAlign:"right"}}>
-                        <div style={{fontSize:13,fontWeight:800,color:"#1d4ed8"}}>{fmt(l.valor)}</div>
-                        <span style={{...RS.pill,background:"#eff6ff",color:"#1d4ed8",marginTop:4,display:"inline-block"}}>PNCP</span>
+                        <div style={{fontSize:14,fontWeight:800,color:"#1d4ed8"}}>{fmt(l.valor)}</div>
+                        <span style={{...RS.pill,background:"#eff6ff",color:"#1d4ed8",display:"block",marginTop:4}}>PNCP</span>
                       </div>
                     </div>
-                    <div style={{display:"flex",alignItems:"center",gap:8,borderTop:"1px solid #f1f5f9",paddingTop:10}}>
-                      <span style={{fontSize:11,color:d!==null&&d<=7?"#dc2626":"#64748b"}}>📅 {fmtDate(l.dataAbertura)} {d>0?`(${d}d)`:""}</span>
+                    <div style={{display:"flex",alignItems:"center",gap:6,borderTop:"1px solid #f1f5f9",paddingTop:10,flexWrap:"wrap"}}>
+                      <span style={{fontSize:11,color:d!==null&&d<=7?"#dc2626":"#64748b"}}>📅 {fmtDate(l.dataAbertura)}{d>0?` (${d}d)`:""}</span>
                       <div style={{marginLeft:"auto",display:"flex",gap:6}}>
-                        <button style={RS.btnOut} onClick={()=>{setFormCert({...CERT0,titulo:(l.objeto||"").slice(0,80),tipoCertame:l.modalidade||"Pregão Eletrônico",numero:l.numeroControlePNCP||"",orgao:l.orgao||"",uf:l.uf||"",objeto:l.objeto||"",valor:l.valor||"",dataAbertura:l.dataAbertura||"",dataPublicacao:l.dataPublicacao||"",fonte:"PNCP",monitorando:true});setModalType("addCertame");showToast("📥 Dados importados!");}}>📥</button>
-                        <button style={RS.btnSec} onClick={()=>setPncpSelected(l)}>Ver +</button>
+                        {l.linkEdital&&<a href={l.linkEdital} target="_blank" rel="noreferrer" title="Ver edital no PNCP" style={{background:"#eff6ff",border:"1.5px solid #bfdbfe",borderRadius:8,padding:"5px 8px",fontSize:13,color:"#1d4ed8",textDecoration:"none",display:"flex",alignItems:"center"}}>🌐</a>}
+                        <button style={RS.btnOut} onClick={importar}>📥 Importar</button>
+                        <button style={RS.btnSec} onClick={()=>setPncpSelected(idx)}>Ver +</button>
                       </div>
                     </div>
                   </div>
@@ -1914,22 +1909,53 @@ export default function App() {
 
             {/* Timbre / Logo */}
             <div style={RS.card}>
-              <div style={{fontSize:13,fontWeight:800,marginBottom:6}}>🖼 Timbre / Logomarca</div>
-              <div style={{fontSize:12,color:"#64748b",marginBottom:12,lineHeight:1.5}}>
-                Cole a URL de uma imagem (logo da empresa) para ser usada no cabeçalho das declarações e propostas PDF.<br/>
-                Dica: Suba a imagem no <a href="https://imgbb.com" target="_blank" rel="noreferrer" style={{color:"#1d4ed8"}}>imgbb.com</a> ou <a href="https://imgur.com" target="_blank" rel="noreferrer" style={{color:"#1d4ed8"}}>imgur.com</a> e cole o link aqui.
+              <div style={{fontSize:13,fontWeight:800,marginBottom:6}}>🖼 Timbre / Logomarca nos PDFs</div>
+              <div style={{fontSize:12,color:"var(--txt-sub)",marginBottom:14,lineHeight:1.6}}>
+                Faça o upload da logo diretamente ou cole uma URL. A imagem aparecerá no cabeçalho de todos os PDFs.
               </div>
-              <FG l="URL da Logo / Timbre">
-                <FI value={formEmp.timbre||""} onChange={e=>setFormEmp(p=>({...p,timbre:e.target.value}))} placeholder="https://i.ibb.co/sua-logo.png"/>
+              {/* Upload direto */}
+              <div style={{marginBottom:12}}>
+                <label style={{display:"block",fontSize:10,fontWeight:700,color:"var(--txt-sub)",textTransform:"uppercase",letterSpacing:".3px",marginBottom:6}}>Upload da Logo (PNG, JPG, SVG)</label>
+                <label style={{display:"flex",alignItems:"center",gap:10,background:"var(--bg-input)",border:"2px dashed var(--border)",borderRadius:10,padding:"14px 16px",cursor:"pointer",transition:"border-color .2s"}}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor="#1d4ed8"}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
+                  <span style={{fontSize:24}}>📁</span>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:"#1d4ed8"}}>Clique para selecionar arquivo</div>
+                    <div style={{fontSize:11,color:"var(--txt-sub)"}}>PNG, JPG, SVG — max 2MB — converte para Base64 automaticamente</div>
+                  </div>
+                  <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
+                    const file=e.target.files?.[0];
+                    if(!file)return;
+                    if(file.size>2*1024*1024){showToast("Imagem muito grande (max 2MB)","error");return;}
+                    const reader=new FileReader();
+                    reader.onload=ev=>{ setFormEmp(p=>({...p,timbre:ev.target.result})); showToast("✅ Logo carregada!"); };
+                    reader.readAsDataURL(file);
+                  }}/>
+                </label>
+              </div>
+              {/* OU URL manual */}
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                <div style={{flex:1,height:1,background:"var(--border)"}}/>
+                <span style={{fontSize:11,color:"var(--txt-sub)",fontWeight:600}}>OU cole uma URL</span>
+                <div style={{flex:1,height:1,background:"var(--border)"}}/>
+              </div>
+              <FG l="URL da Logo (opcional)">
+                <FI value={(formEmp.timbre||"").startsWith("data:")?"":(formEmp.timbre||"")} onChange={e=>setFormEmp(p=>({...p,timbre:e.target.value}))} placeholder="https://exemplo.com/logo.png"/>
               </FG>
+              {/* Prévia */}
               {formEmp.timbre&&(
-                <div style={{marginTop:10,padding:10,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)",textAlign:"center"}}>
-                  <img src={formEmp.timbre} alt="Timbre" style={{maxHeight:80,maxWidth:"100%",objectFit:"contain"}}
-                    onError={e=>e.target.style.display="none"}/>
-                  <div style={{fontSize:10,color:"#64748b",marginTop:4}}>Prévia do timbre</div>
+                <div style={{marginTop:12,padding:12,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)",textAlign:"center"}}>
+                  <img src={formEmp.timbre} alt="Logo" style={{maxHeight:90,maxWidth:"100%",objectFit:"contain",borderRadius:6}}
+                    onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="block";}}/>
+                  <div style={{display:"none",fontSize:12,color:"#dc2626",padding:8}}>⚠️ Imagem não pôde ser carregada. Use upload direto ou verifique a URL.</div>
+                  <div style={{fontSize:10,color:"var(--txt-sub)",marginTop:6,display:"flex",justifyContent:"center",alignItems:"center",gap:8}}>
+                    <span>Prévia do timbre nos PDFs</span>
+                    <button onClick={()=>setFormEmp(p=>({...p,timbre:""}))} style={{background:"none",border:"none",color:"#dc2626",cursor:"pointer",fontSize:11,fontWeight:700}}>✕ Remover</button>
+                  </div>
                 </div>
               )}
-              <button style={{...RS.btnPrimary,width:"100%",marginTop:10}} onClick={saveEmpresa}>💾 Salvar Timbre</button>
+              <button style={{...RS.btnPrimary,width:"100%",marginTop:12}} onClick={saveEmpresa}>💾 Salvar Logo / Timbre</button>
             </div>
 
             {/* Admin — Gerenciar Empresas */}
@@ -1967,8 +1993,8 @@ export default function App() {
         )}
       </main>
 
-      {/* BOTTOM NAV */}
-      <nav id="bnav" style={RS.bnav}>
+      {/* BOTTOM NAV — mobile only */}
+      <nav id="bnav-mobile" style={RS.bnav}>
         {[{id:"dashboard",ic:"▣",lb:"Início"},{id:"fontes",ic:"🌐",lb:"Buscar"},{id:"certames",ic:"📁",lb:"Certames"},{id:"certidoes",ic:"🏅",lb:"Certidões"},{id:"configuracoes",ic:"⚙️",lb:"Config"}].map(n=>(
           <button key={n.id} style={{...RS.bnavBtn,...(tab===n.id?RS.bnavOn:{})}} onClick={()=>{setTab(n.id);if(n.id!=="certames")setSelectedCert(null);if(n.id!=="fontes")setPncpSelected(null);}}>
             <span style={{fontSize:19,lineHeight:1}}>{n.ic}</span>
@@ -1976,6 +2002,7 @@ export default function App() {
           </button>
         ))}
       </nav>
+      </div>{/* end #app-main */}
     </div>
   );
 }
@@ -2109,7 +2136,7 @@ const AILoad=()=><div style={{display:"flex",alignItems:"center",gap:8,padding:"
 // STYLES — Totalmente responsivos PC + Mobile
 // ══════════════════════════════════════════════════════════════════════
 const RS = {
-  root:{fontFamily:"'DM Sans','Nunito',sans-serif",background:"var(--bg-app)",minHeight:"100vh",color:"var(--txt)",display:"flex",flexDirection:"row"},
+  root:{fontFamily:"'DM Sans',system-ui,sans-serif",background:"var(--bg-app)",color:"var(--txt)"},
   onboard:{maxWidth:640,margin:"0 auto",padding:"32px 20px 100px",width:"100%"},
   card:{background:"var(--bg-card)",borderRadius:16,padding:"16px",border:"1px solid var(--border)",marginBottom:12},
   hdr:{background:"var(--bg-card)",borderBottom:"1px solid var(--border)",padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50},
@@ -2117,7 +2144,7 @@ const RS = {
   notifBtn:{background:"none",border:"none",cursor:"pointer",fontSize:18,padding:"6px 8px",borderRadius:8,position:"relative"},
   nDot:{position:"absolute",top:2,right:2,background:"#dc2626",color:"#fff",borderRadius:"50%",fontSize:8,fontWeight:800,width:14,height:14,display:"flex",alignItems:"center",justifyContent:"center"},
   avatar:{width:32,height:32,borderRadius:"50%",background:"#1d4ed8",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,cursor:"pointer",flexShrink:0},
-  sidebar:{position:"fixed",left:0,top:0,bottom:0,width:260,background:"#0f172a",zIndex:200,transition:"transform .25s",display:"flex",flexDirection:"column",overflow:"hidden"},
+  sidebar:{width:248,minWidth:248,background:"#0f172a",zIndex:200,transition:"transform .3s",display:"flex",flexDirection:"column",overflow:"hidden",flexShrink:0},
   sbLogo:{display:"flex",alignItems:"center",gap:12,padding:"18px 16px",borderBottom:"1px solid #1e293b",cursor:"pointer"},
   sbItem:{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:10,background:"none",border:"none",color:"#94a3b8",cursor:"pointer",fontSize:13,fontWeight:600,textAlign:"left",width:"100%"},
   sbItemOn:{background:"#1e3a5f",color:"#60a5fa"},
@@ -2128,7 +2155,7 @@ const RS = {
   modal:{background:"var(--bg-card)",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:600,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"},
   mHdr:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid var(--border)",fontWeight:700,fontSize:14},
   mBody:{overflowY:"auto",padding:"16px 18px 32px"},
-  main:{flex:1,overflowY:"auto",paddingBottom:72,minWidth:0},
+  main:{flex:1,overflowY:"auto",minWidth:0},
   pg:{padding:"20px 28px",maxWidth:1200,margin:"0 auto",width:"100%"},
   grid4:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12,marginBottom:20},
   statCard:{borderRadius:14,padding:"14px",border:"1.5px solid",display:"flex",flexDirection:"column",gap:4},
@@ -2160,6 +2187,7 @@ const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
+    --sidebar-w:248px;
     --fs-base:14px;
     --bg-app:#f1f5f9;--bg-card:#fff;--bg-input:#f8fafc;
     --txt:#1e293b;--txt-muted:#94a3b8;--txt-sub:#64748b;
@@ -2172,29 +2200,57 @@ const CSS = `
     --border:#334155;--border-light:#1e293b;
     --blue:#60a5fa;--blue-lt:#1e3a5f;
   }
-  body{background:var(--bg-app);margin:0;font-size:var(--fs-base);color:var(--txt)}
-  ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  html,body,#root{height:100%}
+  body{background:var(--bg-app);margin:0;font-size:var(--fs-base);color:var(--txt);font-family:'DM Sans',system-ui,sans-serif}
+  ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
   .hov{transition:transform .12s,box-shadow .12s}.hov:hover{transform:translateY(-1px);box-shadow:0 4px 18px #00000012}
-  input:focus,select:focus,textarea:focus{border-color:#1d4ed8!important}
+  input:focus,select:focus,textarea:focus{border-color:#1d4ed8!important;outline:none}
   input[type=date]{color-scheme:light}[data-theme="dark"] input[type=date]{color-scheme:dark}
   @keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin .8s linear infinite}
   select option{background:var(--bg-card);color:var(--txt)}
-  /* Desktop: sidebar sempre visível, sem bottom nav */
+  button,input,select,textarea{font-family:inherit}
+
+  /* ═══ LAYOUT DESKTOP (≥900px): 2 colunas fixas ═══ */
   @media(min-width:900px){
-    .app-layout{display:flex!important}
-    #sidebar{transform:translateX(0)!important;position:relative!important;height:100vh;flex-shrink:0}
+    .app-root{display:flex;height:100vh;overflow:hidden}
+    #sidebar{
+      width:var(--sidebar-w);
+      min-width:var(--sidebar-w);
+      max-width:var(--sidebar-w);
+      position:relative!important;
+      transform:none!important;
+      height:100vh;
+      flex-shrink:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+    }
     #sidebar-overlay{display:none!important}
-    #bnav{display:none!important}
+    #app-main{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+      overflow:hidden;
+    }
+    #main-content{
+      flex:1;
+      overflow-y:auto;
+      padding-bottom:24px;
+    }
+    #bnav-mobile{display:none!important}
     #menu-btn{display:none!important}
-    #main-area{margin-left:0;padding-bottom:0!important}
-    .pg{padding:20px 28px!important}
+    .pg{padding:20px 28px!important;max-width:none!important}
   }
-  /* Mobile: sidebar flutuante, bottom nav */
+
+  /* ═══ LAYOUT MOBILE (<900px): sidebar flutuante ═══ */
   @media(max-width:899px){
-    .app-layout{display:block!important}
-    #sidebar{position:fixed!important;z-index:200;height:100vh}
-    #bnav{display:flex!important}
-    #main-area{padding-bottom:72px!important}
+    .app-root{display:block;min-height:100vh}
+    #sidebar{position:fixed!important;z-index:300;height:100vh;overflow-y:auto}
+    #app-main{display:flex;flex-direction:column;min-height:100vh}
+    #main-content{flex:1;padding-bottom:72px}
+    #bnav-mobile{display:flex!important}
+    .pg{padding:14px 16px!important}
   }
 `;
 
