@@ -882,7 +882,7 @@ export default function App() {
             <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><rect x="24" y="4" width="4" height="44" rx="2" fill="white" opacity="0.9"/><rect x="6" y="10" width="40" height="4" rx="2" fill="white" opacity="0.9"/><path d="M8 14 L20 38 H8 Z" fill="white" opacity="0.7"/><path d="M44 14 L32 38 H44 Z" fill="white" opacity="0.7"/><circle cx="26" cy="8" r="4" fill="#60a5fa"/></svg>
           </div>
           <h1 style={{fontSize:34,fontWeight:900,color:"#f1f5f9",letterSpacing:"-1px",marginBottom:6}}>LicitaFlow</h1>
-          <p style={{fontSize:14,color:"#64748b",fontWeight:500}}>{APP_VERSION} — Gestão Inteligente de Licitações Públicas</p>
+          <p style={{fontSize:14,color:"#64748b",fontWeight:500}}>Versão {APP_VERSION} · Gestão Inteligente de Licitações Públicas</p>
         </div>
         <div style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:32}}>
           <div style={{marginBottom:22}}>
@@ -983,110 +983,147 @@ export default function App() {
       {toast && <div style={{...RS.toast,background:toast.type==="error"?"#dc2626":"#16a34a"}}>{toast.msg}</div>}
 
       {/* ── SIDEBAR ── */}
-      <aside id="sidebar" style={{...RS.sidebar,transform:sidebarOpen?"translateX(0)":"translateX(-248px)"}}>
-        <div style={RS.sbLogo} onClick={()=>setSidebarOpen(false)}>
-          <span style={{fontSize:24,color:"#60a5fa"}}>⚖</span>
-          <div><div style={{fontSize:15,fontWeight:800,color:"#f1f5f9"}}>LicitaFlow v7</div><div style={{fontSize:10,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{empresa?.nomeFantasia||empresa?.razaoSocial||"Nenhuma empresa"}</div></div>
+      <aside id="sidebar" style={{...RS.sidebar,transform:sidebarOpen?"translateX(0)":"translateX(-256px)"}}>
+        {/* Logo */}
+        <div style={RS.sbLogo}>
+          <div style={{width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#2563eb,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 12px rgba(37,99,235,.4)"}}>
+            <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
+              <rect x="24" y="3" width="4" height="46" rx="2" fill="white" opacity=".9"/>
+              <rect x="5" y="10" width="42" height="4" rx="2" fill="white" opacity=".9"/>
+              <path d="M7 14 L19 40 H7 Z" fill="white" opacity=".75"/>
+              <path d="M45 14 L33 40 H45 Z" fill="white" opacity=".75"/>
+              <circle cx="26" cy="7" r="4" fill="#60a5fa"/>
+            </svg>
+          </div>
+          <div>
+            <div style={{fontSize:15,fontWeight:800,color:"#f9fafb",letterSpacing:"-.3px"}}>LicitaFlow</div>
+            <div style={{fontSize:10,color:"#6b7280",fontWeight:500}}>{APP_VERSION} · Gestão de Licitações</div>
+          </div>
         </div>
 
-        {/* Seletor de Empresa */}
+        {/* Seletor empresa */}
         {empresasList.length>0&&(
-          <div style={{padding:"10px 10px 4px",borderBottom:"1px solid #1e293b"}}>
-            <div style={{fontSize:9,color:"#475569",fontWeight:700,textTransform:"uppercase",letterSpacing:".5px",marginBottom:6}}>Empresa Ativa</div>
-            <select style={{width:"100%",background:"#1e293b",color:"#f1f5f9",border:"1px solid #334155",borderRadius:8,padding:"7px 10px",fontSize:12,fontWeight:600,cursor:"pointer"}}
-              value={empresaAtualId||""}
-              onChange={e=>trocarEmpresa(e.target.value)}>
-              {empresasList.map(e=>(
-                <option key={e.id} value={e.id}>{e.nomeFantasia||e.razaoSocial}</option>
-              ))}
+          <div style={{padding:"12px 14px",borderBottom:"1px solid #1f2937"}}>
+            <div style={{fontSize:9,color:"#4b5563",fontWeight:700,textTransform:"uppercase",letterSpacing:".8px",marginBottom:6}}>Empresa Ativa</div>
+            <select style={{width:"100%",background:"#1f2937",color:"#f9fafb",border:"1px solid #374151",borderRadius:8,padding:"8px 10px",fontSize:12,fontWeight:600,cursor:"pointer"}}
+              value={empresaAtualId||""} onChange={e=>trocarEmpresa(e.target.value)}>
+              {empresasList.map(e=><option key={e.id} value={e.id}>{(e.nomeFantasia||e.razaoSocial||"").slice(0,24)}</option>)}
             </select>
-            {adminMode&&(
-              <button style={{...RS.btnPrimary,width:"100%",marginTop:6,fontSize:11,padding:"6px"}}
-                onClick={()=>{setSidebarOpen(false);criarNovaEmpresa();}}>
-                + Nova Empresa
-              </button>
-            )}
+            {adminMode&&<button style={{width:"100%",background:"#1e3a5f",border:"none",borderRadius:8,padding:"7px",fontSize:11,color:"#60a5fa",fontWeight:600,cursor:"pointer",marginTop:6}} onClick={()=>{setSidebarOpen(false);criarNovaEmpresa();}}>+ Nova Empresa</button>}
           </div>
         )}
 
-        <nav style={{flex:1,padding:"10px 8px",display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
+        {/* Nav */}
+        <nav style={{flex:1,padding:"10px 10px",overflowY:"auto",scrollbarWidth:"none"}}>
+          {/* Principal */}
+          <div style={RS.sbSection}>Principal</div>
           {[
-            {id:"dashboard",ic:"▣",lb:"Dashboard"},
-            {id:"empresa",ic:"🏢",lb:"Cadastrar Empresa"},
-            {id:"fontes",ic:"🌐",lb:"Buscar (PNCP)"},
-            {id:"certames",ic:"📁",lb:"Meus Certames",bd:stats.abertos},
-            {id:"habilitacao",ic:"☑",lb:"Habilitação"},
-            {id:"historico",ic:"📊",lb:"Histórico"},
-            {id:"calendario",ic:"📅",lb:"Calendário"},
-            {id:"impugnacoes",ic:"⚠️",lb:"Impugnações",bd:stats.impPendentes},
-            {id:"certidoes",ic:"🏅",lb:"Certidões",bd:stats.certidoesAlerta},
-            {id:"documentos",ic:"📄",lb:"Documentos"},
-            {id:"propostas",ic:"📝",lb:"Propostas"},
-            {id:"declaracoes",ic:"📜",lb:"Declarações"},
-            {id:"configuracoes",ic:"⚙️",lb:"Configurações"},
+            {id:"dashboard",lb:"Dashboard",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>},
+            {id:"fontes",lb:"Buscar Editais",bd:null,icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>},
+            {id:"certames",lb:"Meus Certames",bd:stats.abertos,icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>},
           ].map(n=>(
-            <button key={n.id} style={{...RS.sbItem,...(tab===n.id?RS.sbItemOn:{})}}
-              onClick={()=>{setTab(n.id);setSidebarOpen(false);if(n.id!=="certames")setSelectedCert(null);if(n.id!=="fontes")setPncpSelected(null);}}>
-              <span style={{fontSize:14,width:20,textAlign:"center",flexShrink:0}}>{n.ic}</span>
-              <span style={{flex:1,textAlign:"left"}}>{n.lb}</span>
+            <button key={n.id} onClick={()=>{setTab(n.id);setSidebarOpen(false);if(n.id!=="certames")setSelectedCert(null);if(n.id!=="fontes")setPncpSelected(null);}}
+              style={{...RS.sbItem,...(tab===n.id?RS.sbItemOn:{})}}>
+              <span style={{color:tab===n.id?"#60a5fa":"#6b7280",flexShrink:0}}>{n.icon}</span>
+              <span style={{flex:1}}>{n.lb}</span>
               {n.bd>0&&<span style={RS.sbBadge}>{n.bd}</span>}
             </button>
           ))}
+
+          {/* Gestão */}
+          <div style={RS.sbSection}>Gestão</div>
+          {[
+            {id:"habilitacao",lb:"Habilitação",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>},
+            {id:"historico",lb:"Histórico",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>},
+            {id:"calendario",lb:"Calendário",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
+            {id:"impugnacoes",lb:"Impugnações",bd:stats.impPendentes,icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>},
+          ].map(n=>(
+            <button key={n.id} onClick={()=>{setTab(n.id);setSidebarOpen(false);if(n.id!=="certames")setSelectedCert(null);}}
+              style={{...RS.sbItem,...(tab===n.id?RS.sbItemOn:{})}}>
+              <span style={{color:tab===n.id?"#60a5fa":"#6b7280",flexShrink:0}}>{n.icon}</span>
+              <span style={{flex:1}}>{n.lb}</span>
+              {n.bd>0&&<span style={RS.sbBadge}>{n.bd}</span>}
+            </button>
+          ))}
+
+          {/* Documentos */}
+          <div style={RS.sbSection}>Documentos</div>
+          {[
+            {id:"certidoes",lb:"Certidões",bd:stats.certidoesAlerta,icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>},
+            {id:"documentos",lb:"Documentos",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>},
+            {id:"propostas",lb:"Propostas",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+            {id:"declaracoes",lb:"Declarações",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>},
+          ].map(n=>(
+            <button key={n.id} onClick={()=>{setTab(n.id);setSidebarOpen(false);}}
+              style={{...RS.sbItem,...(tab===n.id?RS.sbItemOn:{})}}>
+              <span style={{color:tab===n.id?"#60a5fa":"#6b7280",flexShrink:0}}>{n.icon}</span>
+              <span style={{flex:1}}>{n.lb}</span>
+              {n.bd>0&&<span style={RS.sbBadge}>{n.bd}</span>}
+            </button>
+          ))}
+
+          {/* Sistema */}
+          <div style={RS.sbSection}>Sistema</div>
+          {[
+            {id:"empresa",lb:"Cadastrar Empresa",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>},
+            {id:"configuracoes",lb:"Configurações",icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>},
+          ].map(n=>(
+            <button key={n.id} onClick={()=>{setTab(n.id);setSidebarOpen(false);}}
+              style={{...RS.sbItem,...(tab===n.id?RS.sbItemOn:{})}}>
+              <span style={{color:tab===n.id?"#60a5fa":"#6b7280",flexShrink:0}}>{n.icon}</span>
+              <span style={{flex:1}}>{n.lb}</span>
+            </button>
+          ))}
         </nav>
-        <div style={{padding:"12px 16px",borderTop:"1px solid #1e293b",fontSize:10,color:"#475569",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span>{empresa?.cnpj||"—"}</span>
+
+        {/* Footer sidebar */}
+        <div style={{padding:"12px 16px",borderTop:"1px solid #1f2937",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:10,color:"#6b7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{empresa?.cnpj||"—"}</div>
+          </div>
           {adminMode
-            ? <span style={{background:"#16a34a",color:"#fff",borderRadius:6,padding:"2px 7px",fontSize:9,fontWeight:700}}>ADMIN</span>
-            : <button style={{background:"none",border:"1px solid #334155",color:"#64748b",borderRadius:6,padding:"2px 7px",fontSize:9,fontWeight:700,cursor:"pointer"}}
-                onClick={()=>setShowAdminLogin(true)}>🔐 Admin</button>
+            ?<span style={{background:"#065f46",color:"#34d399",borderRadius:6,padding:"2px 8px",fontSize:9,fontWeight:700}}>ADMIN</span>
+            :<button style={{background:"none",border:"1px solid #374151",color:"#6b7280",borderRadius:6,padding:"3px 8px",fontSize:9,fontWeight:700,cursor:"pointer"}} onClick={()=>setShowAdminLogin(true)}>🔐 Admin</button>
           }
         </div>
       </aside>
-      {sidebarOpen&&<div id="sidebar-overlay" style={RS.overlay} onClick={()=>setSidebarOpen(false)}/>}
+      {sidebarOpen&&<div id="sidebar-overlay" style={RS.overlay} onClick={()=>setSidebarOpen(false)}/>}lay} onClick={()=>setSidebarOpen(false)}/>}
 
       {/* ── HEADER ── */}
       <header style={RS.hdr}>
-        {/* Esquerda: menu burger + nome da página */}
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <button id="menu-btn" style={RS.menuBtn} onClick={()=>setSidebarOpen(v=>!v)}>☰</button>
-          <span style={{fontSize:15,fontWeight:700,color:"var(--txt)",display:"flex",alignItems:"center",gap:6}}>
-            <span style={{fontSize:18,color:"#1d4ed8"}}>⚖</span>
-            <span style={{fontWeight:900,color:"#1d4ed8"}}>LicitaFlow</span>
-            {empresa&&<span style={{color:"var(--txt-sub)",fontWeight:400,fontSize:13}}>· {(empresa.nomeFantasia||empresa.razaoSocial||"").slice(0,30)}</span>}
-          </span>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <button id="menu-btn" style={RS.menuBtn} onClick={()=>setSidebarOpen(v=>!v)} aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:30,height:30,borderRadius:8,background:"linear-gradient(135deg,#2563eb,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width="16" height="16" viewBox="0 0 52 52" fill="none"><rect x="24" y="3" width="4" height="46" rx="2" fill="white"/><rect x="5" y="10" width="42" height="4" rx="2" fill="white"/><path d="M7 14 L19 40 H7 Z" fill="white" opacity=".8"/><path d="M45 14 L33 40 H45 Z" fill="white" opacity=".8"/></svg>
+            </div>
+            <div>
+              <span style={{fontSize:15,fontWeight:800,color:"var(--accent)",letterSpacing:"-.3px"}}>LicitaFlow</span>
+              {empresa&&<span style={{fontSize:12,color:"var(--txt-sub)",fontWeight:400,marginLeft:6}}>· {(empresa.nomeFantasia||empresa.razaoSocial||"").slice(0,28)}</span>}
+            </div>
+          </div>
         </div>
-        {/* Direita: troca empresa + notif + avatar + sair */}
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
           {empresasList.length>1&&(
-            <select style={{background:"var(--bg-input)",color:"var(--txt)",border:"1.5px solid var(--border)",borderRadius:8,padding:"5px 10px",fontSize:11,fontWeight:700,cursor:"pointer",maxWidth:140}}
-              value={empresaAtualId||""}
-              onChange={e=>trocarEmpresa(e.target.value)}>
-              {empresasList.map(e=>(
-                <option key={e.id} value={e.id}>{(e.nomeFantasia||e.razaoSocial||"").slice(0,16)}</option>
-              ))}
+            <select style={{background:"var(--bg-input)",color:"var(--txt)",border:"1.5px solid var(--border)",borderRadius:8,padding:"6px 10px",fontSize:11,fontWeight:600,cursor:"pointer",maxWidth:150}}
+              value={empresaAtualId||""} onChange={e=>trocarEmpresa(e.target.value)}>
+              {empresasList.map(e=><option key={e.id} value={e.id}>{(e.nomeFantasia||e.razaoSocial||"").slice(0,18)}</option>)}
             </select>
           )}
-          <button
-            style={{background:notifs.length>0?"#fef2f2":"none",border:"none",cursor:"pointer",fontSize:18,padding:"6px 8px",borderRadius:8,position:"relative"}}
-            onClick={()=>setShowNotifs(v=>!v)}
-            title="Notificações">
-            🔔{notifs.length>0&&<span style={RS.nDot}>{notifs.length}</span>}
+          <button style={{...RS.notifBtn,background:notifs.length>0?"#fef2f2":"transparent",color:notifs.length>0?"#dc2626":"var(--txt-sub)"}} onClick={()=>setShowNotifs(v=>!v)} title="Notificações">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            {notifs.length>0&&<span style={RS.nDot}>{notifs.length}</span>}
           </button>
-          <div
-            style={{...RS.avatar,background:"linear-gradient(135deg,#1d4ed8,#7c3aed)"}}
-            onClick={()=>setTab("empresa")}
-            title={empresa?.razaoSocial||"Cadastrar empresa"}>
+          <div style={RS.avatar} onClick={()=>setTab("empresa")} title={empresa?.razaoSocial||"Empresa"}>
             {(empresa?.razaoSocial||"LF").slice(0,2).toUpperCase()}
           </div>
-          <button
-            title="Sair do sistema"
-            onClick={()=>{sessionStorage.removeItem("lf_auth");window.location.reload();}}
-            style={{background:"none",border:"1.5px solid var(--border)",borderRadius:8,padding:"6px 8px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--txt-sub)"}}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
+          <button title="Sair do sistema" onClick={()=>{sessionStorage.removeItem("lf_auth");window.location.reload();}}
+            style={{background:"none",border:"1.5px solid var(--border)",borderRadius:8,padding:"7px 9px",cursor:"pointer",display:"flex",alignItems:"center",color:"var(--txt-sub)",transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="#dc2626";e.currentTarget.style.color="#dc2626";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--txt-sub)";}}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
         </div>
       </header>
@@ -1146,74 +1183,185 @@ export default function App() {
 
         {/* DASHBOARD */}
         {tab==="dashboard"&&(
-          <div style={RS.pg}>
-            <PgHdr title="Dashboard" sub={empresa?.razaoSocial}/>
-            <div style={RS.grid4}>
+          <div style={RS.pg} className="fade-in">
+            {/* Header da página */}
+            <div style={{marginBottom:28,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
+              <div>
+                <h1 style={{fontSize:24,fontWeight:800,color:"var(--txt)",letterSpacing:"-.5px",marginBottom:4}}>
+                  Olá! 👋
+                </h1>
+                <p style={{fontSize:14,color:"var(--txt-sub)",fontWeight:400}}>
+                  {empresa?.razaoSocial||"Bem-vindo ao LicitaFlow"} · {new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"})}
+                </p>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button style={{...RS.btnSec,display:"flex",alignItems:"center",gap:6}} onClick={()=>setTab("fontes")}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  Buscar Editais
+                </button>
+                <button style={{...RS.btnPrimary,display:"flex",alignItems:"center",gap:6}} onClick={()=>{setFormCert({...CERT0});setModalType("addCertame");}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Novo Certame
+                </button>
+              </div>
+            </div>
+
+            {/* KPIs em linha */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:14,marginBottom:28}}>
               {[
-                {l:"Certames",v:stats.certames,ic:"📁",c:"#1d4ed8",bg:"#eff6ff",t:"certames"},
-                {l:"Abertos",v:stats.abertos,ic:"🟢",c:"#16a34a",bg:"#f0fdf4",t:"certames"},
-                {l:"Alertas",v:stats.notifs,ic:"🔔",c:"#dc2626",bg:"#fef2f2",t:null},
-                {l:"Vencedores",v:stats.vencedores,ic:"🏆",c:"#d97706",bg:"#fffbeb",t:"historico"},
-                {l:"Certidões",v:stats.certidoesAlerta,ic:"🏅",c:"#7c3aed",bg:"#f5f3ff",t:"certidoes"},
-                {l:"Propostas",v:propostas.length,ic:"📝",c:"#0369a1",bg:"#f0f9ff",t:"propostas"},
-                {l:"Monitorando",v:stats.monitorando,ic:"◉",c:"#475569",bg:"#f8fafc",t:"certames"},
-                {l:"Impugnações",v:stats.impPendentes,ic:"⚖️",c:"#dc2626",bg:"#fef2f2",t:"impugnacoes"},
+                {l:"Total Certames",v:stats.certames,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,c:"#2563eb",bg:"#eff6ff",t:"certames"},
+                {l:"Em Aberto",v:stats.abertos,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,c:"#059669",bg:"#ecfdf5",t:"certames"},
+                {l:"Vencedores",v:stats.vencedores,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>,c:"#d97706",bg:"#fffbeb",t:"historico"},
+                {l:"Propostas",v:propostas.length,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,c:"#0369a1",bg:"#f0f9ff",t:"propostas"},
+                {l:"Monitorando",v:stats.monitorando,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,c:"#7c3aed",bg:"#f5f3ff",t:"certames"},
+                {l:"Certidões ⚠",v:stats.certidoesAlerta,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>,c:"#dc2626",bg:"#fef2f2",t:"certidoes"},
+                {l:"Alertas",v:stats.notifs,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,c:"#dc2626",bg:"#fef2f2",t:null},
+                {l:"Impugnações",v:stats.impPendentes,ic:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>,c:"#d97706",bg:"#fffbeb",t:"impugnacoes"},
               ].map((s,i)=>(
-                <div key={i} style={{...RS.statCard,background:s.bg,borderColor:s.c+"30",cursor:s.t?"pointer":"default"}} className="hov" onClick={()=>s.t&&setTab(s.t)}>
-                  <div style={{fontSize:20}}>{s.ic}</div>
-                  <div style={{fontSize:22,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
-                  <div style={{fontSize:10,color:"#64748b",fontWeight:700}}>{s.l}</div>
+                <div key={i} className="stat-card hov" onClick={()=>s.t&&setTab(s.t)}
+                  style={{cursor:s.t?"pointer":"default",background:s.bg,borderColor:s.c+"25",borderWidth:"1.5px"}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:s.c+"18",display:"flex",alignItems:"center",justifyContent:"center",color:s.c,marginBottom:4}}>{s.ic}</div>
+                  <div style={{fontSize:26,fontWeight:900,color:s.c,lineHeight:1.1,letterSpacing:"-.5px"}}>{s.v}</div>
+                  <div style={{fontSize:11,color:"#64748b",fontWeight:600,marginTop:2}}>{s.l}</div>
                 </div>
               ))}
             </div>
 
-            {notifs.length>0&&(
-              <div style={RS.section}>
-                <SHdr title="🔔 Alertas Ativos"><button style={RS.lnkBtn} onClick={()=>setShowNotifs(true)}>Ver →</button></SHdr>
-                {notifs.slice(0,3).map(n=>(
-                  <div key={n.id} style={{padding:"9px 12px",borderLeft:`3px solid ${NCOL[n.tipo]}`,background:"#fafafa",borderRadius:8,marginBottom:6}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#1e293b"}}>{n.msg}</div>
-                    <div style={{fontSize:11,color:"#94a3b8"}}>{n.sub}</div>
+            {/* Layout 2 colunas */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+
+              {/* Coluna esquerda */}
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+                {/* Próximas Aberturas */}
+                <div style={{...RS.section,padding:"20px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                    <div style={{fontWeight:700,fontSize:14,color:"var(--txt)",display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{width:28,height:28,borderRadius:8,background:"#eff6ff",display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      </span>
+                      Próximas Aberturas
+                    </div>
+                    <button style={RS.lnkBtn} onClick={()=>setTab("certames")}>Ver todas →</button>
                   </div>
-                ))}
-              </div>
-            )}
-
-            <div style={RS.section}>
-              <SHdr title="⏰ Próximas Aberturas"><button style={RS.lnkBtn} onClick={()=>setTab("certames")}>Ver todas →</button></SHdr>
-              {certames.filter(c=>c.monitorando&&c.status==="Aberto").length===0
-                ?<div style={{fontSize:13,color:"#94a3b8"}}>Nenhum certame monitorado. <button style={{...RS.lnkBtn,fontSize:13}} onClick={()=>setTab("certames")}>Adicionar →</button></div>
-                :certames.filter(c=>c.monitorando&&c.status==="Aberto").sort((a,b)=>new Date(a.dataAbertura)-new Date(b.dataAbertura)).slice(0,4).map(c=>{
-                  const d=diasAte(c.dataAbertura); const prog=habProgress(c);
-                  return(
-                    <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid #f8fafc",cursor:"pointer"}} className="hov" onClick={()=>{setSelectedCert(c);setTab("certames");}}>
-                      <div style={{minWidth:38,height:38,borderRadius:10,background:d<=3?"#dc2626":d<=7?"#d97706":"#1d4ed8",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:800,flexShrink:0}}>{d>0?d+"d":d===0?"HOJ":"ENC"}</div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:12,fontWeight:700,color:"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.titulo||c.objeto||""}</div>
-                        <div style={{fontSize:10,color:"#94a3b8"}}>{c.tipoCertame} · {fmtDate(c.dataAbertura)}</div>
+                  {certames.filter(c=>c.monitorando&&c.status==="Aberto").length===0?(
+                    <div style={{textAlign:"center",padding:"24px 0",color:"var(--txt-sub)"}}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{margin:"0 auto 8px",display:"block",opacity:.4}}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      <div style={{fontSize:13,fontWeight:600}}>Nenhum certame monitorado</div>
+                      <button style={{...RS.lnkBtn,marginTop:6,fontSize:13}} onClick={()=>setTab("fontes")}>Buscar no PNCP →</button>
+                    </div>
+                  ):certames.filter(c=>c.monitorando&&c.status==="Aberto").sort((a,b)=>new Date(a.dataAbertura)-new Date(b.dataAbertura)).slice(0,5).map(c=>{
+                    const d=diasAte(c.dataAbertura); const prog=habProgress(c);
+                    const color=d<=0?"#dc2626":d<=3?"#dc2626":d<=7?"#d97706":"#2563eb";
+                    const bgColor=d<=0?"#fef2f2":d<=3?"#fef2f2":d<=7?"#fffbeb":"#eff6ff";
+                    return(
+                      <div key={c.id} className="card-hover" style={{display:"flex",alignItems:"center",gap:12,padding:"12px",borderRadius:12,border:"1px solid var(--border-light)",marginBottom:8,cursor:"pointer",background:"var(--bg-input)"}} onClick={()=>{setSelectedCert(c);setTab("certames");}}>
+                        <div style={{width:42,height:42,borderRadius:10,background:bgColor,border:`1.5px solid ${color}30`,display:"flex",alignItems:"center",justifyContent:"center",color:color,fontSize:11,fontWeight:800,flexShrink:0,flexDirection:"column",gap:0}}>
+                          <span style={{fontSize:13,fontWeight:900,lineHeight:1}}>{d<=0?"ENC":d+"d"}</span>
+                          {d>0&&<span style={{fontSize:8,opacity:.7}}>dias</span>}
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:700,color:"var(--txt)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.titulo||c.objeto||""}</div>
+                          <div style={{fontSize:11,color:"var(--txt-sub)",marginTop:2}}>{c.tipoCertame} · {c.orgao}</div>
+                          <div style={{marginTop:6,background:"var(--border)",borderRadius:4,height:4,overflow:"hidden"}}>
+                            <div style={{background:prog===100?"#059669":color,height:4,width:prog+"%",borderRadius:4,transition:"width .4s"}}/>
+                          </div>
+                        </div>
+                        <div style={{fontSize:11,fontWeight:700,color:prog===100?"#059669":"var(--txt-sub)",flexShrink:0}}>{prog}%</div>
                       </div>
-                      <div style={{...RS.pill,background:prog===100?"#f0fdf4":"#eff6ff",color:prog===100?"#16a34a":"#1d4ed8",flexShrink:0}}>{prog}%</div>
-                    </div>
-                  );
-                })}
-            </div>
+                    );
+                  })}
+                </div>
 
-            {/* Certidões alerta */}
-            {stats.certidoesAlerta>0&&(
-              <div style={RS.section}>
-                <SHdr title="🏅 Certidões com Alerta"><button style={RS.lnkBtn} onClick={()=>setTab("certidoes")}>Gerenciar →</button></SHdr>
-                {CERTIDOES_CONFIG.filter(cfg=>{const s=certidaoStatus(cfg.id);return s==="vencida"||s==="vencendo";}).map(cfg=>{
-                  const reg=certidoes[cfg.id]; const d=diasAte(reg?.dataValidade);
-                  return(
-                    <div key={cfg.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:"1px solid #f8fafc"}}>
-                      <span style={{fontSize:18}}>{cfg.icon}</span>
-                      <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700}}>{cfg.sigla}</div><div style={{fontSize:10,color:"#94a3b8"}}>{cfg.orgao}</div></div>
-                      <span style={{...RS.pill,background:d<=0?"#fef2f2":"#fffbeb",color:d<=0?"#dc2626":"#d97706",flexShrink:0}}>{d<=0?"Vencida":`${d}d`}</span>
+                {/* Alertas */}
+                {notifs.length>0&&(
+                  <div style={{...RS.section,padding:"20px",borderLeft:"3px solid #dc2626"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                      <div style={{fontWeight:700,fontSize:14,display:"flex",alignItems:"center",gap:8,color:"#dc2626"}}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        {notifs.length} Alerta{notifs.length>1?"s":""} Ativo{notifs.length>1?"s":""}
+                      </div>
+                      <button style={RS.lnkBtn} onClick={()=>{setNotifDismissed(notifs.map(n=>n.id));}}>Limpar</button>
                     </div>
-                  );
-                })}
+                    {notifs.slice(0,4).map(n=>(
+                      <div key={n.id} style={{padding:"10px 12px",borderLeft:`3px solid ${NCOL[n.tipo]}`,background:n.tipo==="urgente"?"#fef2f2":"#fffbeb",borderRadius:"0 8px 8px 0",marginBottom:6}}>
+                        <div style={{fontSize:12,fontWeight:700,color:"var(--txt)"}}>{n.msg}</div>
+                        <div style={{fontSize:11,color:"var(--txt-sub)",marginTop:1}}>{n.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Coluna direita */}
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+                {/* Resumo Financeiro */}
+                <div style={{...RS.section,padding:"20px",background:"linear-gradient(135deg,#1e3a5f 0%,#1e1b4b 100%)",border:"none"}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"#93c5fd",marginBottom:14,textTransform:"uppercase",letterSpacing:".5px"}}>Resumo de Participações</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                    {[
+                      {l:"Total participado",v:certames.length,color:"#fff"},
+                      {l:"Taxa de sucesso",v:certames.length?Math.round((stats.vencedores/certames.length)*100)+"%":"—",color:"#34d399"},
+                      {l:"Valor total licitado",v:fmt(certames.reduce((a,c)=>a+(parseFloat(c.valor)||0),0)),color:"#93c5fd"},
+                      {l:"Valor ganho",v:fmt(certames.filter(c=>c.resultado==="Vencedor").reduce((a,c)=>a+(parseFloat(c.valorProposta||c.valor)||0),0)),color:"#fbbf24"},
+                    ].map((x,i)=>(
+                      <div key={i} style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:"12px 14px",border:"1px solid rgba(255,255,255,.08)"}}>
+                        <div style={{fontSize:10,color:"#9ca3af",fontWeight:600,marginBottom:4}}>{x.l}</div>
+                        <div style={{fontSize:16,fontWeight:800,color:x.color}}>{x.v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Certidões com Alerta */}
+                <div style={{...RS.section,padding:"20px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                    <div style={{fontWeight:700,fontSize:14,color:"var(--txt)",display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{width:28,height:28,borderRadius:8,background:"#f5f3ff",display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                      </span>
+                      Certidões
+                    </div>
+                    <button style={RS.lnkBtn} onClick={()=>setTab("certidoes")}>Gerenciar →</button>
+                  </div>
+                  {CERTIDOES_CONFIG.slice(0,6).map(cfg=>{
+                    const s=certidaoStatus(cfg.id); const reg=certidoes[cfg.id]; const d=reg?.dataValidade?diasAte(reg.dataValidade):null;
+                    const stc={valida:"#059669","vencendo":"#d97706","vencida":"#dc2626","sem-registro":"#94a3b8"};
+                    const stbg={valida:"#ecfdf5","vencendo":"#fffbeb","vencida":"#fef2f2","sem-registro":"#f8fafc"};
+                    return(
+                      <div key={cfg.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:"1px solid var(--border-light)"}}>
+                        <span style={{fontSize:18,flexShrink:0}}>{cfg.icon}</span>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:12,fontWeight:600,color:"var(--txt)"}}>{cfg.sigla}</div>
+                          {reg?.dataValidade&&<div style={{fontSize:10,color:"var(--txt-sub)"}}>Vence: {fmtDate(reg.dataValidade)}</div>}
+                        </div>
+                        <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:8,background:stbg[s],color:stc[s],flexShrink:0}}>{s==="sem-registro"?"—":s==="valida"?"✓ Ok":d<=0?"Vencida":`${d}d`}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Ações Rápidas */}
+                <div style={{...RS.section,padding:"20px"}}>
+                  <div style={{fontWeight:700,fontSize:14,color:"var(--txt)",marginBottom:14}}>Ações Rápidas</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    {[
+                      {l:"Nova Proposta",ic:"📝",t:"propostas",color:"#059669"},
+                      {l:"Declarações",ic:"📜",t:"declaracoes",color:"#7c3aed"},
+                      {l:"Habilitação",ic:"✅",t:"habilitacao",color:"#2563eb"},
+                      {l:"Calendário",ic:"📅",t:"calendario",color:"#d97706"},
+                    ].map((a,i)=>(
+                      <button key={i} onClick={()=>setTab(a.t)} style={{display:"flex",alignItems:"center",gap:8,padding:"11px 14px",borderRadius:10,border:"1.5px solid var(--border)",background:"var(--bg-input)",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--txt)",transition:"all .15s"}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=a.color;e.currentTarget.style.color=a.color;e.currentTarget.style.background=a.color+"10";}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--txt)";e.currentTarget.style.background="var(--bg-input)";}}>
+                        <span style={{fontSize:16}}>{a.ic}</span>{a.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1228,13 +1376,43 @@ export default function App() {
         {/* PNCP */}
         {tab==="fontes"&&!pncpSelected&&(
           <div style={RS.pg}>
-            <PgHdr title="🌐 PNCP ao Vivo" sub="Portal Nacional de Contratações Públicas — publicações recentes">
+            <PgHdr title="🔍 Buscar Editais" sub="PNCP · ComprasGov · Portais Oficiais">
               <button style={RS.refreshBtn} onClick={()=>fetchPNCP(pncpSearch,1)} disabled={pncpLoading}>{pncpLoading?"…":"↻"}</button>
             </PgHdr>
+            {/* Tabs de fonte */}
+            <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+              {[
+                {id:"pncp",lb:"🏛 PNCP",desc:"Portal Nacional"},
+                {id:"comprasgov",lb:"🛒 ComprasGov",desc:"Portal Federal"},
+                {id:"links",lb:"🔗 Portais Externos",desc:"Links diretos"},
+              ].map(s=>(
+                <button key={s.id} onClick={()=>setFonteTab&&setFonteTab(s.id)}
+                  style={{padding:"8px 16px",borderRadius:10,border:"1.5px solid var(--border)",background:"var(--bg-card)",color:"var(--txt-sub)",fontWeight:600,fontSize:12,cursor:"pointer",flex:1,textAlign:"center"}}>
+                  <div style={{fontSize:13}}>{s.lb}</div>
+                  <div style={{fontSize:10,opacity:.7}}>{s.desc}</div>
+                </button>
+              ))}
+            </div>
             <div style={RS.card}>
               <div style={{display:"flex",gap:8}}>
-                <input style={{...RS.fi,flex:1}} placeholder="Filtrar objeto ou órgão..." value={pncpSearch} onChange={e=>setPncpSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&fetchPNCP(pncpSearch,1)}/>
+                <input style={{...RS.fi,flex:1}} placeholder="Buscar por objeto, órgão ou município..." value={pncpSearch} onChange={e=>setPncpSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&fetchPNCP(pncpSearch,1)}/>
                 <button style={RS.btnPrimary} onClick={()=>fetchPNCP(pncpSearch,1)}>Buscar</button>
+              </div>
+              {/* Links diretos portais */}
+              <div style={{marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}>
+                {[
+                  {lb:"🏛 PNCP Editais",url:"https://pncp.gov.br/app/editais?status=recebendo_proposta"},
+                  {lb:"🛒 ComprasGov",url:"https://compras.dados.gov.br/licitacoes/doc/licitacao"},
+                  {lb:"📋 ComprasNet",url:"https://www.comprasnet.gov.br/acesso.asp?url=/ConsultaLicitacoes/ConsLicitacao_Filtro.asp"},
+                  {lb:"🌐 BNC",url:"https://www.bnc.org.br/"},
+                ].map(p=>(
+                  <a key={p.url} href={p.url} target="_blank" rel="noreferrer"
+                    style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid var(--border)",background:"var(--bg-input)",color:"var(--txt-sub)",fontSize:11,fontWeight:600,textDecoration:"none",transition:"all .15s",display:"inline-flex",alignItems:"center",gap:4}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="#2563eb";e.currentTarget.style.color="#2563eb";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--txt-sub)";}}>
+                    {p.lb} ↗
+                  </a>
+                ))}
               </div>
             </div>
             {pncpLoading&&<Loading/>}
@@ -1995,10 +2173,16 @@ export default function App() {
 
       {/* BOTTOM NAV — mobile only */}
       <nav id="bnav-mobile" style={RS.bnav}>
-        {[{id:"dashboard",ic:"▣",lb:"Início"},{id:"fontes",ic:"🌐",lb:"Buscar"},{id:"certames",ic:"📁",lb:"Certames"},{id:"certidoes",ic:"🏅",lb:"Certidões"},{id:"configuracoes",ic:"⚙️",lb:"Config"}].map(n=>(
+        {[
+          {id:"dashboard",lb:"Início",ic:<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>},
+          {id:"fontes",lb:"Buscar",ic:<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>},
+          {id:"certames",lb:"Certames",ic:<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>},
+          {id:"certidoes",lb:"Certidões",ic:<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>},
+          {id:"configuracoes",lb:"Config",ic:<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33"/></svg>},
+        ].map(n=>(
           <button key={n.id} style={{...RS.bnavBtn,...(tab===n.id?RS.bnavOn:{})}} onClick={()=>{setTab(n.id);if(n.id!=="certames")setSelectedCert(null);if(n.id!=="fontes")setPncpSelected(null);}}>
-            <span style={{fontSize:19,lineHeight:1}}>{n.ic}</span>
-            <span style={{fontSize:9,fontWeight:700}}>{n.lb}</span>
+            <span style={{color:tab===n.id?"var(--accent)":"var(--txt-muted)"}}>{n.ic}</span>
+            <span>{n.lb}</span>
           </button>
         ))}
       </nav>
@@ -2127,8 +2311,8 @@ const FG=({l,children,style})=><div style={{flex:1,display:"flex",flexDirection:
 const FI=(props)=><input style={RS.fi} {...props}/>;
 const FA=(props)=><textarea style={{...RS.fi,minHeight:60,resize:"vertical"}} {...props}/>;
 const SL=({children})=><div style={{fontSize:10,fontWeight:800,color:"#1d4ed8",textTransform:"uppercase",letterSpacing:".5px",paddingBottom:4,borderBottom:"1.5px solid #eff6ff",marginTop:4}}>{children}</div>;
-const PgHdr=({title,sub,children})=><div style={{marginBottom:18,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}><div><h1 style={{fontSize:20,fontWeight:800,color:"#0f172a",letterSpacing:"-.5px"}}>{title}</h1>{sub&&<p style={{fontSize:12,color:"#94a3b8",marginTop:2}}>{sub}</p>}</div><div style={{display:"flex",gap:8}}>{children}</div></div>;
-const SHdr=({title,children})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><span style={{fontSize:13,fontWeight:800,color:"#1e293b"}}>{title}</span>{children}</div>;
+const PgHdr=({title,sub,children})=><div style={{marginBottom:22,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}><div><h1 style={{fontSize:22,fontWeight:800,color:"var(--txt)",letterSpacing:"-.5px",display:"flex",alignItems:"center",gap:8}}>{title}</h1>{sub&&<p style={{fontSize:12,color:"var(--txt-sub)",marginTop:3,fontWeight:500}}>{sub}</p>}</div><div style={{display:"flex",gap:8,alignItems:"center"}}>{children}</div></div>;
+const SHdr=({title,children})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><span style={{fontSize:14,fontWeight:700,color:"var(--txt)"}}>{title}</span>{children}</div>;
 const Loading=()=><div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,padding:"50px",color:"#94a3b8",fontSize:14}}><div style={{width:28,height:28,border:"3px solid #e2e8f0",borderTop:"3px solid #1d4ed8",borderRadius:"50%"}} className="spin"/>Carregando...</div>;
 const AILoad=()=><div style={{display:"flex",alignItems:"center",gap:8,padding:"12px 0",color:"#64748b",fontSize:13}}><div style={{width:15,height:15,border:"2px solid #e2e8f0",borderTop:"2px solid #1d4ed8",borderRadius:"50%"}} className="spin"/>Analisando com IA...</div>;
 
@@ -2136,121 +2320,142 @@ const AILoad=()=><div style={{display:"flex",alignItems:"center",gap:8,padding:"
 // STYLES — Totalmente responsivos PC + Mobile
 // ══════════════════════════════════════════════════════════════════════
 const RS = {
-  root:{fontFamily:"'DM Sans',system-ui,sans-serif",background:"var(--bg-app)",color:"var(--txt)"},
+  root:{fontFamily:"'Inter',system-ui,sans-serif",background:"var(--bg-app)",color:"var(--txt)"},
   onboard:{maxWidth:640,margin:"0 auto",padding:"32px 20px 100px",width:"100%"},
-  card:{background:"var(--bg-card)",borderRadius:16,padding:"16px",border:"1px solid var(--border)",marginBottom:12},
-  hdr:{background:"var(--bg-card)",borderBottom:"1px solid var(--border)",padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50},
-  menuBtn:{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"#475569",padding:"4px 6px"},
-  notifBtn:{background:"none",border:"none",cursor:"pointer",fontSize:18,padding:"6px 8px",borderRadius:8,position:"relative"},
-  nDot:{position:"absolute",top:2,right:2,background:"#dc2626",color:"#fff",borderRadius:"50%",fontSize:8,fontWeight:800,width:14,height:14,display:"flex",alignItems:"center",justifyContent:"center"},
-  avatar:{width:32,height:32,borderRadius:"50%",background:"#1d4ed8",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,cursor:"pointer",flexShrink:0},
-  sidebar:{width:248,minWidth:248,background:"#0f172a",zIndex:200,transition:"transform .3s",display:"flex",flexDirection:"column",overflow:"hidden",flexShrink:0},
-  sbLogo:{display:"flex",alignItems:"center",gap:12,padding:"18px 16px",borderBottom:"1px solid #1e293b",cursor:"pointer"},
-  sbItem:{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:10,background:"none",border:"none",color:"#94a3b8",cursor:"pointer",fontSize:13,fontWeight:600,textAlign:"left",width:"100%"},
-  sbItemOn:{background:"#1e3a5f",color:"#60a5fa"},
-  sbBadge:{marginLeft:"auto",background:"#dc2626",color:"#fff",borderRadius:10,fontSize:10,padding:"2px 6px",fontWeight:700},
-  overlay:{position:"fixed",inset:0,background:"#00000055",zIndex:150},
-  notifPanel:{position:"fixed",top:57,right:0,width:300,maxWidth:"92vw",background:"var(--bg-card)",border:"1px solid var(--border)",borderRadius:"0 0 0 14px",boxShadow:"0 8px 30px #00000022",zIndex:200,maxHeight:420,overflowY:"auto"},
-  mOverlay:{position:"fixed",inset:0,background:"#00000060",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center"},
-  modal:{background:"var(--bg-card)",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:600,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column"},
-  mHdr:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid var(--border)",fontWeight:700,fontSize:14},
-  mBody:{overflowY:"auto",padding:"16px 18px 32px"},
+  card:{background:"var(--bg-card)",borderRadius:"var(--radius-lg)",padding:"20px",border:"1px solid var(--border)",marginBottom:12,boxShadow:"var(--shadow-sm)"},
+  hdr:{background:"var(--bg-card)",borderBottom:"1px solid var(--border)",padding:"0 24px",height:60,display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:"var(--shadow-sm)"},
+  menuBtn:{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--txt-sub)",padding:"6px 8px",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"},
+  notifBtn:{background:"none",border:"none",cursor:"pointer",fontSize:17,padding:"8px",borderRadius:10,position:"relative",color:"var(--txt-sub)",display:"flex",alignItems:"center"},
+  nDot:{position:"absolute",top:4,right:4,background:"#dc2626",color:"#fff",borderRadius:"50%",fontSize:8,fontWeight:800,width:13,height:13,display:"flex",alignItems:"center",justifyContent:"center"},
+  avatar:{width:34,height:34,borderRadius:"50%",background:"linear-gradient(135deg,#2563eb,#7c3aed)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0,boxShadow:"0 2px 8px rgba(37,99,235,.3)"},
+  sidebar:{width:256,minWidth:256,background:"var(--bg-sidebar)",zIndex:200,transition:"transform .3s ease",display:"flex",flexDirection:"column",overflow:"hidden",flexShrink:0},
+  sbLogo:{display:"flex",alignItems:"center",gap:12,padding:"20px 18px 16px",borderBottom:"1px solid #1f2937"},
+  sbItem:{display:"flex",alignItems:"center",gap:10,padding:"9px 14px",borderRadius:10,background:"none",border:"none",color:"var(--txt-sidebar)",cursor:"pointer",fontSize:13,fontWeight:500,textAlign:"left",width:"100%",transition:"all .15s"},
+  sbItemOn:{background:"var(--bg-sidebar-active)",color:"var(--txt-sidebar-active)",fontWeight:600},
+  sbBadge:{marginLeft:"auto",background:"#dc2626",color:"#fff",borderRadius:8,fontSize:9,padding:"2px 7px",fontWeight:700},
+  sbSection:{fontSize:9,fontWeight:700,color:"#4b5563",textTransform:"uppercase",letterSpacing:"1px",padding:"16px 18px 6px"},
+  overlay:{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",zIndex:150,backdropFilter:"blur(2px)"},
+  notifPanel:{position:"fixed",top:62,right:16,width:340,maxWidth:"92vw",background:"var(--bg-card)",border:"1px solid var(--border)",borderRadius:16,boxShadow:"var(--shadow-lg)",zIndex:200,maxHeight:440,overflowY:"auto"},
+  mOverlay:{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(3px)"},
+  modal:{background:"var(--bg-card)",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:640,maxHeight:"94vh",overflow:"hidden",display:"flex",flexDirection:"column"},
+  mHdr:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"18px 22px",borderBottom:"1px solid var(--border)",fontWeight:700,fontSize:15},
+  mBody:{overflowY:"auto",padding:"20px 22px 36px"},
   main:{flex:1,overflowY:"auto",minWidth:0},
-  pg:{padding:"20px 28px",maxWidth:1200,margin:"0 auto",width:"100%"},
-  grid4:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12,marginBottom:20},
-  statCard:{borderRadius:14,padding:"14px",border:"1.5px solid",display:"flex",flexDirection:"column",gap:4},
-  section:{background:"var(--bg-card)",borderRadius:14,padding:"14px 16px",marginBottom:12,border:"1px solid var(--border)"},
-  licCard:{background:"var(--bg-card)",borderRadius:14,padding:"14px",border:"1px solid var(--border)",marginBottom:10},
+  pg:{padding:"24px 32px",maxWidth:1400,margin:"0 auto",width:"100%"},
+  grid4:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))",gap:14,marginBottom:24},
+  statCard:{borderRadius:16,padding:"18px 20px",border:"1px solid var(--border)",display:"flex",flexDirection:"column",gap:6,background:"var(--bg-card)",boxShadow:"var(--shadow-sm)"},
+  section:{background:"var(--bg-card)",borderRadius:16,padding:"18px 20px",marginBottom:14,border:"1px solid var(--border)",boxShadow:"var(--shadow-sm)"},
+  licCard:{background:"var(--bg-card)",borderRadius:14,padding:"16px",border:"1px solid var(--border)",marginBottom:10,boxShadow:"var(--shadow-sm)"},
   pill:{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:6,display:"inline-block"},
   iGrid:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8,marginTop:10},
-  iBox:{background:"var(--bg-input)",borderRadius:10,padding:"10px 12px",border:"1px solid var(--border-light)"},
-  subTabs:{display:"flex",gap:4,marginBottom:14,overflowX:"auto",scrollbarWidth:"none"},
-  subTab:{background:"var(--bg-card)",border:"1.5px solid var(--border)",borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:"var(--txt-sub)",whiteSpace:"nowrap",flexShrink:0},
-  subTabOn:{background:"#1d4ed8",borderColor:"#1d4ed8",color:"#fff"},
-  tlItem:{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--border-light)",cursor:"pointer"},
-  lnkBtn:{background:"none",border:"none",color:"#1d4ed8",fontSize:12,fontWeight:700,cursor:"pointer"},
-  backBtn:{background:"none",border:"none",color:"#1d4ed8",fontSize:13,fontWeight:700,cursor:"pointer",padding:"0 0 12px",display:"block"},
-  fi:{border:"1.5px solid var(--border)",borderRadius:8,padding:"9px 12px",fontSize:13,color:"var(--txt)",outline:"none",fontFamily:"inherit",background:"var(--bg-input)",width:"100%",boxSizing:"border-box"},
-  btnPrimary:{background:"#1d4ed8",color:"#fff",border:"none",borderRadius:10,padding:"9px 16px",fontSize:13,fontWeight:700,cursor:"pointer"},
-  btnSec:{background:"#eff6ff",color:"#1d4ed8",border:"none",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:700,cursor:"pointer"},
-  btnOut:{background:"none",color:"var(--txt-sub)",border:"1.5px solid var(--border)",borderRadius:8,padding:"7px 12px",fontSize:12,fontWeight:700,cursor:"pointer"},
-  btnAI:{background:"#1d4ed8",color:"#fff",border:"none",borderRadius:8,padding:"8px 12px",fontSize:12,fontWeight:700,cursor:"pointer"},
-  refreshBtn:{background:"var(--bg-input)",border:"none",borderRadius:8,width:36,height:36,fontSize:18,cursor:"pointer",color:"#1d4ed8"},
-  aiTxt:{fontSize:11,color:"var(--txt-sub)",lineHeight:1.7,whiteSpace:"pre-wrap",fontFamily:"inherit",background:"var(--bg-input)",borderRadius:8,padding:"12px",border:"1px solid var(--border)",maxHeight:260,overflowY:"auto"},
-  toast:{position:"fixed",top:66,left:"50%",transform:"translateX(-50%)",color:"#fff",padding:"10px 22px",borderRadius:20,fontSize:13,fontWeight:700,zIndex:999,boxShadow:"0 4px 20px #00000030",whiteSpace:"nowrap"},
-  bnav:{position:"fixed",bottom:0,left:0,right:0,background:"var(--bg-card)",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"center",gap:0,padding:"7px 0 10px",zIndex:100},
-  bnavBtn:{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",color:"var(--txt-muted)",padding:"4px 16px",borderRadius:8,minWidth:60},
-  bnavOn:{color:"#1d4ed8"},
-};
+  iBox:{background:"var(--bg-input)",borderRadius:10,padding:"10px 14px",border:"1px solid var(--border-light)"},
+  subTabs:{display:"flex",gap:6,marginBottom:16,overflowX:"auto",scrollbarWidth:"none"},
+  subTab:{background:"var(--bg-card)",border:"1.5px solid var(--border)",borderRadius:10,padding:"8px 16px",fontSize:12,fontWeight:600,cursor:"pointer",color:"var(--txt-sub)",whiteSpace:"nowrap",flexShrink:0,transition:"all .15s"},
+  subTabOn:{background:"var(--accent)",borderColor:"var(--accent)",color:"#fff"},
+  tlItem:{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid var(--border-light)",cursor:"pointer"},
+  lnkBtn:{background:"none",border:"none",color:"var(--accent)",fontSize:12,fontWeight:600,cursor:"pointer"},
+  backBtn:{background:"none",border:"none",color:"var(--accent)",fontSize:13,fontWeight:600,cursor:"pointer",padding:"0 0 14px",display:"block"},
+  fi:{border:"1.5px solid var(--border)",borderRadius:8,padding:"10px 14px",fontSize:13,color:"var(--txt)",outline:"none",fontFamily:"inherit",background:"var(--bg-input)",width:"100%",boxSizing:"border-box",transition:"border-color .15s"},
+  btnPrimary:{background:"var(--accent)",color:"#fff",border:"none",borderRadius:10,padding:"10px 20px",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all .15s",boxShadow:"0 2px 8px rgba(37,99,235,.25)"},
+  btnSec:{background:"var(--accent-lt)",color:"var(--accent)",border:"none",borderRadius:10,padding:"8px 16px",fontSize:12,fontWeight:600,cursor:"pointer"},
+  btnOut:{background:"none",color:"var(--txt-sub)",border:"1.5px solid var(--border)",borderRadius:10,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer",transition:"all .15s"},
+  btnDanger:{background:"#fef2f2",color:"#dc2626",border:"1.5px solid #fecaca",borderRadius:10,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer"},
+  btnAI:{background:"linear-gradient(135deg,#2563eb,#7c3aed)",color:"#fff",border:"none",borderRadius:10,padding:"9px 14px",fontSize:12,fontWeight:600,cursor:"pointer"},
+  refreshBtn:{background:"var(--bg-input)",border:"1.5px solid var(--border)",borderRadius:10,width:38,height:38,fontSize:16,cursor:"pointer",color:"var(--accent)",display:"flex",alignItems:"center",justifyContent:"center"},
+  aiTxt:{fontSize:12,color:"var(--txt-sub)",lineHeight:1.8,whiteSpace:"pre-wrap",fontFamily:"inherit",background:"var(--bg-input)",borderRadius:10,padding:"14px",border:"1px solid var(--border)",maxHeight:280,overflowY:"auto"},
+  toast:{position:"fixed",top:70,left:"50%",transform:"translateX(-50%)",color:"#fff",padding:"11px 24px",borderRadius:24,fontSize:13,fontWeight:600,zIndex:999,boxShadow:"var(--shadow-lg)",whiteSpace:"nowrap"},
+  bnav:{position:"fixed",bottom:0,left:0,right:0,background:"var(--bg-card)",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"center",padding:"8px 0 12px",zIndex:100,boxShadow:"0 -2px 16px rgba(0,0,0,.06)"},
+  bnavBtn:{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",color:"var(--txt-muted)",padding:"4px 18px",borderRadius:10,minWidth:60,fontSize:9,fontWeight:600,transition:"color .15s"},
+  bnavOn:{color:"var(--accent)"},
+};};
 
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --sidebar-w:248px;
+    --sidebar-w:256px;
     --fs-base:14px;
-    --bg-app:#f1f5f9;--bg-card:#fff;--bg-input:#f8fafc;
-    --txt:#1e293b;--txt-muted:#94a3b8;--txt-sub:#64748b;
-    --border:#e2e8f0;--border-light:#f1f5f9;
-    --blue:#1d4ed8;--blue-lt:#eff6ff;
+    --accent:#2563eb;
+    --accent-dark:#1d4ed8;
+    --accent-lt:#eff6ff;
+    --green:#059669;
+    --red:#dc2626;
+    --yellow:#d97706;
+    --purple:#7c3aed;
+    --bg-app:#f0f4f8;
+    --bg-card:#ffffff;
+    --bg-input:#f8fafc;
+    --bg-sidebar:#111827;
+    --bg-sidebar-hover:#1f2937;
+    --bg-sidebar-active:#1e3a5f;
+    --txt:#0f172a;
+    --txt-sub:#475569;
+    --txt-muted:#94a3b8;
+    --txt-sidebar:#9ca3af;
+    --txt-sidebar-active:#60a5fa;
+    --border:#e2e8f0;
+    --border-light:#f1f5f9;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+    --shadow:0 4px 16px rgba(0,0,0,.08);
+    --shadow-lg:0 10px 40px rgba(0,0,0,.12);
+    --radius:12px;
+    --radius-sm:8px;
+    --radius-lg:16px;
   }
   [data-theme="dark"]{
-    --bg-app:#0f172a;--bg-card:#1e293b;--bg-input:#0f172a;
-    --txt:#f1f5f9;--txt-muted:#64748b;--txt-sub:#94a3b8;
-    --border:#334155;--border-light:#1e293b;
-    --blue:#60a5fa;--blue-lt:#1e3a5f;
+    --bg-app:#0b1120;--bg-card:#141e2e;--bg-input:#0f172a;
+    --txt:#f1f5f9;--txt-sub:#94a3b8;--txt-muted:#64748b;
+    --border:#1e293b;--border-light:#1a2535;
+    --accent:#3b82f6;--accent-lt:#1e3a5f;
   }
-  html,body,#root{height:100%}
-  body{background:var(--bg-app);margin:0;font-size:var(--fs-base);color:var(--txt);font-family:'DM Sans',system-ui,sans-serif}
-  ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-  .hov{transition:transform .12s,box-shadow .12s}.hov:hover{transform:translateY(-1px);box-shadow:0 4px 18px #00000012}
-  input:focus,select:focus,textarea:focus{border-color:#1d4ed8!important;outline:none}
-  input[type=date]{color-scheme:light}[data-theme="dark"] input[type=date]{color-scheme:dark}
-  @keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin .8s linear infinite}
+  html,body,#root{height:100%;margin:0;padding:0}
+  body{background:var(--bg-app);font-size:var(--fs-base);color:var(--txt);font-family:'Inter',system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)!important;outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  input[type=date]{color-scheme:light}
+  [data-theme="dark"] input[type=date]{color-scheme:dark}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .spin{animation:spin .8s linear infinite}
+  .fade-in{animation:fadeIn .2s ease}
+  .hov{transition:all .15s ease}
+  .hov:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
   select option{background:var(--bg-card);color:var(--txt)}
   button,input,select,textarea{font-family:inherit}
+  a{text-decoration:none}
 
-  /* ═══ LAYOUT DESKTOP (≥900px): 2 colunas fixas ═══ */
+  /* ═══ LAYOUT DESKTOP ═══ */
   @media(min-width:900px){
     .app-root{display:flex;height:100vh;overflow:hidden}
     #sidebar{
-      width:var(--sidebar-w);
-      min-width:var(--sidebar-w);
-      max-width:var(--sidebar-w);
-      position:relative!important;
-      transform:none!important;
-      height:100vh;
-      flex-shrink:0;
-      overflow-y:auto;
-      overflow-x:hidden;
+      width:var(--sidebar-w);min-width:var(--sidebar-w);max-width:var(--sidebar-w);
+      position:relative!important;transform:none!important;
+      height:100vh;flex-shrink:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;
     }
+    #sidebar::-webkit-scrollbar{display:none}
     #sidebar-overlay{display:none!important}
-    #app-main{
-      flex:1;
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      height:100vh;
-      overflow:hidden;
-    }
-    #main-content{
-      flex:1;
-      overflow-y:auto;
-      padding-bottom:24px;
-    }
+    #app-main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    #main-content{flex:1;overflow-y:auto;padding-bottom:24px}
     #bnav-mobile{display:none!important}
     #menu-btn{display:none!important}
-    .pg{padding:20px 28px!important;max-width:none!important}
+    .pg{padding:24px 32px!important;max-width:none!important}
   }
 
-  /* ═══ LAYOUT MOBILE (<900px): sidebar flutuante ═══ */
+  /* ═══ LAYOUT MOBILE ═══ */
   @media(max-width:899px){
     .app-root{display:block;min-height:100vh}
     #sidebar{position:fixed!important;z-index:300;height:100vh;overflow-y:auto}
     #app-main{display:flex;flex-direction:column;min-height:100vh}
     #main-content{flex:1;padding-bottom:72px}
     #bnav-mobile{display:flex!important}
-    .pg{padding:14px 16px!important}
+    .pg{padding:16px!important}
   }
-`;
 
+  /* ═══ COMPONENTES ═══ */
+  .stat-card{border-radius:var(--radius-lg);padding:18px 20px;border:1px solid var(--border);background:var(--bg-card);box-shadow:var(--shadow-sm);cursor:pointer;transition:all .18s;display:flex;flex-direction:column;gap:6px}
+  .stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:.3px}
+  .card-hover{transition:all .15s}.card-hover:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+`;
